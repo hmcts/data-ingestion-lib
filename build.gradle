@@ -9,6 +9,7 @@ buildscript {
     dependencies {
         classpath("net.serenity-bdd:serenity-gradle-plugin:2.0.11")
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
     }
 }
 
@@ -30,6 +31,7 @@ apply plugin: 'net.serenity-bdd.aggregator'
 apply plugin: 'project-report'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
+apply plugin: "com.jfrog.bintray"
 
 def versions = [
         lombok             : '1.18.6',
