@@ -67,8 +67,10 @@ def pomConfig = {
     }
 }
 
-group = 'uk.gov.hmcts.reform.ingestion'
-version = '0.0.2'
+def buildNumber = System.getenv("RELEASE_VERSION")?.replace("refs/tags/", "") ?: "DEV-SNAPSHOT"
+
+group = 'uk.gov.hmcts.reform.data.ingestion'
+version = buildNumber
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
