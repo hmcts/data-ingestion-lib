@@ -46,10 +46,9 @@ def versions = [
         camel              : '2.25.1'
 ]
 
-mainClassName = 'uk.gov.hmcts.reform.juddata.JudicialApplication'
-def jarName = 'rd-judicial-data-load.jar'
+def jarName = 'data-ingestion-lib.jar'
 
-group = 'uk.gov.hmcts.reform.juddata'
+group = 'uk.gov.hmcts.reform.ingestion'
 version = '0.0.1'
 
 sourceCompatibility = 1.8
