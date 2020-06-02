@@ -50,12 +50,30 @@ def versions = [
 
 mainClassName = 'uk.gov.hmcts.reform.*'
 def jarName = 'data-ingestion-lib.jar'
+def gitRepo = "https://github.com/hmcts/data-ingestion-lib"
 
 group = 'uk.gov.hmcts.reform.ingestion'
 version = '0.0.1'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['Main']
+    publish = true
+    pkg {
+        repo = 'hmcts-maven'
+        name = 'data-ingestion-lib'
+        userOrg = 'hmcts'
+        licenses = ['MIT']
+        vcsUrl = gitRepo
+        version {
+            name = project.version
+        }
+    }
+}
 
 compileJava {
     options.compilerArgs << '-parameters' << '-Xlint:deprecation' << "-Xlint:unchecked" << "-Werror"
