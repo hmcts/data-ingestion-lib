@@ -69,7 +69,7 @@ def pomConfig = {
 
 def buildNumber = System.getenv("RELEASE_VERSION")?.replace("refs/tags/", "") ?: "DEV-SNAPSHOT"
 
-group = 'uk.gov.hmcts.reform.data.ingestion'
+group = 'uk.gov.hmcts.reform'
 version = buildNumber
 
 sourceCompatibility = 1.8
