@@ -1,0 +1,41 @@
+#!groovy
+
+@Library("Infrastructure")
+
+def type = "java"
+def product = "rd"
+def component = "judicial-data-load"
+
+
+static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
+    [$class     : 'AzureKeyVaultSecret',
+     secretType : 'Secret',
+     name       : secretName,
+     version    : '',
+     envVariable: envVar
+    ]
+}
+
+def vaultOverrides = [
+    'preview' : 'aat',
+    'spreview': 'saat'
+]
+
+withPipeline(type, product, component) {
+
+    overrideVaultEnvironments(vaultOverrides)
+
+    disableLegacyDeployment()
+    enableAksStagingDeployment()
+
+    nonServiceApp()
+
+   after('functionalTest:preview') {
+        steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/site/serenity/**/*'
+    }
+
+    after('functionalTest:aat') {
+        steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/site/serenity/**/*'
+    }
+
+}
