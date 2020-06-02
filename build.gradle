@@ -46,6 +46,7 @@ def versions = [
         camel              : '2.25.1'
 ]
 
+mainClassName = 'uk.gov.hmcts.reform.*'
 def jarName = 'data-ingestion-lib.jar'
 
 group = 'uk.gov.hmcts.reform.ingestion'
@@ -390,17 +391,15 @@ dependencyUpdates.resolutionStrategy = {
 
 gradle.startParameter.continueOnFailure = true
 
+
 bootJar {
-    archiveName = jarName
     enabled = false
-    manifest {
-        attributes('Implementation-Version': project.version.toString())
-    }
 }
 
 jar {
     enabled = true
 }
+
 
 // this is required to force Java running on the Azure Windows Server OS into using
 // UTF-8 as the default character set instead of windows-1252 which causes issues.
