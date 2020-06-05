@@ -80,10 +80,6 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
-//task javadocJar(type: Jar, dependsOn: javadoc) {
-//    getArchiveClassifier().set('javadoc')
-//    from javadoc.destinationDir
-//}
 
 artifacts {
     archives sourcesJar
@@ -355,12 +351,6 @@ dependencies {
 
     compile group: 'com.opencsv', name: 'opencsv', version: '3.7'
     compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
-
-    compile group: 'commons-configuration', name: 'commons-configuration', version: '1.10'
-    // https://mvnrepository.com/artifact/org.apache.commons/commons-configuration2
-    //compile group: 'org.apache.commons', name: 'commons-configuration2', version: '2.7'
-
-
 
     compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok

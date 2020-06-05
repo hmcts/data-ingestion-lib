@@ -15,17 +15,16 @@ import uk.gov.hmcts.reform.data.ingestion.camel.service.EmailService;
 public abstract class RouteExecutor implements IRouteExecutor {
 
     @Autowired
-    CamelContext camelContext;
+    protected CamelContext camelContext;
 
     @Autowired
-    DataLoadUtil dataLoadUtil;
+    protected DataLoadUtil dataLoadUtil;
 
     @Autowired
-    ProducerTemplate producerTemplate;
-
+    protected ProducerTemplate producerTemplate;
 
     @Autowired
-    EmailService emailService;
+    protected EmailService emailService;
 
     @Override
     public void execute(CamelContext camelContext, String schedulerName, String route) {
