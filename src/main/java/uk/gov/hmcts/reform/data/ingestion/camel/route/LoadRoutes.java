@@ -14,7 +14,6 @@ import org.apache.camel.model.language.SimpleExpression;
 import org.apache.camel.spring.SpringRouteBuilder;
 import org.apache.camel.spring.spi.SpringTransactionPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -48,9 +47,6 @@ public class LoadRoutes {
     @Autowired
     ExceptionProcessor exceptionProcessor;
 
-    @Value("${scheduler-name}")
-    private String schedulerName;
-
     @Autowired
     CamelContext camelContext;
 
@@ -63,7 +59,6 @@ public class LoadRoutes {
 
     @Autowired
     EmailService emailService;
-
 
     @SuppressWarnings("unchecked")
     @Transactional("txManager")
