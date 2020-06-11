@@ -63,7 +63,7 @@ public class JsrValidatorInitializer<T> {
     @Value("${invalid-jsr-sql}")
     String invalidJsrSql;
 
-    @Value("${jsr-threshold-limit}")
+    @Value("${jsr-threshold-limit:0}")
     int jsrThresholdLimit;
 
     @PostConstruct
@@ -115,7 +115,10 @@ public class JsrValidatorInitializer<T> {
         RouteProperties routeProperties = (RouteProperties) exchange.getIn().getHeader(MappingConstants.ROUTE_DETAILS);
         String schedulerTime = globalOptions.get(MappingConstants.SCHEDULER_START_TIME);
 
-        List<ConstraintViolation<T>> violationList = constraintViolations.stream().limit(jsrThresholdLimit)
+        //jsrThresholdLimit=0 we keeping log of all JSR & if jsrThresholdLimit > 0 we
+        // keeping log of JSR for the threshold limit and fails application after that limit
+        List<ConstraintViolation<T>> violationList = constraintViolations.stream()
+                .limit(jsrThresholdLimit == 0 ? constraintViolations.size() : jsrThresholdLimit)
                 .collect(Collectors.toList());
 
         jdbcTemplate.batchUpdate(
