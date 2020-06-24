@@ -16,9 +16,12 @@ public class FileReadProcessor implements Processor {
     @Value("${file-read-time-out}")
     int fileReadTimeOut;
 
+    @Value("${logging-component-name:''}")
+    private String logComponentName;
+
     @Override
     public void process(Exchange exchange) {
-        log.info("::FileReadProcessor starts::");
+        log.info("{}:: FileReadProcessor starts::", logComponentName);
         String blobFilePath = (String) exchange.getProperty(MappingConstants.BLOBPATH);
         CamelContext context = exchange.getContext();
         ConsumerTemplate consumer = context.createConsumerTemplate();

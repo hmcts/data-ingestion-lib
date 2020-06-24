@@ -29,7 +29,6 @@ public class ArchiveAzureFileProcessor implements Processor {
     @Value("${file-read-time-out}")
     int fileReadTimeOut;
 
-
     @Override
     public void process(Exchange exchange) {
 
