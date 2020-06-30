@@ -72,8 +72,8 @@ def buildNumber = System.getenv("RELEASE_VERSION")?.replace("refs/tags/", "") ?:
 group = 'uk.gov.hmcts.reform'
 version = buildNumber
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 11
+targetCompatibility = 11
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     getArchiveClassifier().set('sources')
@@ -308,7 +308,11 @@ dependencies {
     }
     compile group: 'io.github.openfeign.form', name: 'feign-form', version: '3.8.0'
     compile group: 'io.github.openfeign.form', name: 'feign-form-spring', version: '3.8.0'
-    compile group: 'io.rest-assured', name: 'rest-assured', version: '3.0.7'
+    compile (group: 'io.rest-assured', name: 'rest-assured', version: '4.1.2') {
+        exclude group: "com.sun.xml.bind", module: "jaxb-osgi"
+    }
+
+    compile group: 'com.sun.xml.bind', name: 'jaxb-osgi', version: '2.3.3'
     compile group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
     compile group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
 
