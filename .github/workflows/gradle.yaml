@@ -30,7 +30,7 @@ jobs:
         run: ./gradlew bintrayUpload
         if: startsWith(github.ref, 'refs/tags')
       - name: auto release tag
-      if: startsWith(github.ref, 'master')
-      run: |
-      chmod +x ./scripts/relase_tag.sh
-      ./scripts/relase_tag.sh
+        if: startsWith(github.ref, 'master')
+        run: |
+        chmod +x ./scripts/relase_tag.sh
+        ./scripts/relase_tag.sh
