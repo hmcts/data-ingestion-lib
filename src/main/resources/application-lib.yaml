@@ -1,11 +1,11 @@
 spring:
   mail:
     from: no-reply@reform.hmcts.net
-    to:  Praveen.Saxena@HMCTS.NET
-    subject:  Exception received at Rout
+    to:  sushant.choudhari@hmcts.net,abhijit.diwan@hmcts.net,mallikarjun.puttana@hmcts.net
+    subject:  ${component.name:'data-ingestion'} - Exception in processing -
     host: mta.reform.hmcts.net
     port: 25
-    enabled: false
+    enabled:  ${mail.enabled:'false'}
     properties:
       mail-smtp:
         starttls:

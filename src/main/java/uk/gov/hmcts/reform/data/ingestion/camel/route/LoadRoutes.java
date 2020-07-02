@@ -23,7 +23,6 @@ import uk.gov.hmcts.reform.data.ingestion.camel.processor.ExceptionProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.FileReadProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.HeaderValidationProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
-import uk.gov.hmcts.reform.data.ingestion.camel.service.EmailService;
 import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
 
 /**
@@ -57,8 +56,6 @@ public class LoadRoutes {
     @Autowired
     HeaderValidationProcessor headerValidationProcessor;
 
-    @Autowired
-    EmailService emailService;
 
     @SuppressWarnings("unchecked")
     @Transactional("txManager")
@@ -75,7 +72,6 @@ public class LoadRoutes {
                             onException(Exception.class)
                                     .handled(true)
                                     .process(exceptionProcessor)
-                                    .process(emailService)
                                     .markRollbackOnly()
                                     .end();
 
