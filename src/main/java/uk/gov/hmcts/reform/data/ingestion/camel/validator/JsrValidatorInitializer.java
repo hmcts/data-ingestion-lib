@@ -71,7 +71,7 @@ public class JsrValidatorInitializer<T> {
     @Value("${jsr-threshold-limit:0}")
     int jsrThresholdLimit;
 
-    @Value("${logging-component-name:''}")
+    @Value("${logging-component-name:data_ingestion}")
     private String logComponentName;
 
     @Value("${jdbc-batch-size:10}")

@@ -33,7 +33,7 @@ public class ExceptionProcessor implements Processor {
     @Autowired
     EmailService emailService;
 
-    @Value("${logging-component-name:''}")
+    @Value("${logging-component-name:data_ingestion}")
     private String logComponentName;
 
     @Override

@@ -34,7 +34,7 @@ public class EmailService implements IEmailService {
     @Value("${spring.mail.enabled}")
     private boolean mailEnabled;
 
-    @Value("${logging-component-name:''}")
+    @Value("${logging-component-name:data_ingestion}")
     private String logComponentName;
 
     public void sendEmail(String messageBody, String filename) {
