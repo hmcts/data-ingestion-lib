@@ -2,16 +2,18 @@ spring:
   mail:
     from: no-reply@reform.hmcts.net
     to:  sushant.choudhari@hmcts.net,abhijit.diwan@hmcts.net,mallikarjun.puttana@hmcts.net
-    subject:  ${component.name:'data-ingestion'} - Exception in processing -
+    subject:  ${component.name:data-ingestion} - Exception in processing -
     host: mta.reform.hmcts.net
     port: 25
-    enabled:  ${mail.enabled:'false'}
+    enabled:  ${mail.enabled:false}
     properties:
       mail-smtp:
         starttls:
           enable: false
         ssl:
           trust: "*"
+
+
 azure:
   storage:
     account-name: ${ACCOUNT_NAME:ACCOUNT_NAME}

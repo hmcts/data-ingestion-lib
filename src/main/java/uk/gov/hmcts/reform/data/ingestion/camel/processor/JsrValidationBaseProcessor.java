@@ -21,7 +21,7 @@ public abstract class JsrValidationBaseProcessor<T> implements Processor {
     @Value("${jsr-threshold-limit:0}")
     int jsrThresholdLimit;
 
-    @Value("${logging-component-name:''}")
+    @Value("${logging-component-name:data_ingestion}")
     private String logComponentName;
 
     private List<T> invalidRecords;

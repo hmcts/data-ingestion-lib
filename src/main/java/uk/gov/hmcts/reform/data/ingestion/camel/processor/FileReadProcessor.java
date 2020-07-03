@@ -16,7 +16,7 @@ public class FileReadProcessor implements Processor {
     @Value("${file-read-time-out}")
     int fileReadTimeOut;
 
-    @Value("${logging-component-name:''}")
+    @Value("${logging-component-name:data_ingestion}")
     private String logComponentName;
 
     @Override
