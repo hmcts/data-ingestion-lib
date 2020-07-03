@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.util;
 
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ERROR_MESSAGE;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.FILE_NAME;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SUCCESS;
 
 import java.util.Map;
@@ -10,7 +12,7 @@ import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
-import uk.gov.hmcts.reform.data.ingestion.camel.service.EmailService;
+import uk.gov.hmcts.reform.data.ingestion.camel.service.IEmailService;
 
 @Slf4j
 @Component
@@ -26,7 +28,7 @@ public abstract class RouteExecutor implements IRouteExecutor {
     protected ProducerTemplate producerTemplate;
 
     @Autowired
-    protected EmailService emailService;
+    protected IEmailService emailService;
 
     @Override
     public String execute(CamelContext camelContext, String schedulerName, String route) {
@@ -39,8 +41,9 @@ public abstract class RouteExecutor implements IRouteExecutor {
             return SUCCESS;
         } catch (Exception ex) {
             //Camel override error stack with route failed hence grabbing exception form context
-            String errorMessage = camelContext.getGlobalOptions().get(MappingConstants.ERROR_MESSAGE);
-            emailService.sendEmail(errorMessage);
+            String errorMessage = camelContext.getGlobalOptions().get(ERROR_MESSAGE);
+            String fileName = camelContext.getGlobalOptions().get(FILE_NAME);
+            emailService.sendEmail(errorMessage, fileName);
             throw new RouteFailedException(errorMessage);
         }
     }
