@@ -3,10 +3,11 @@ package uk.gov.hmcts.reform.data.ingestion.camel.processor;
 import static java.lang.Boolean.TRUE;
 import static java.util.Objects.isNull;
 import static org.apache.camel.Exchange.EXCEPTION_CAUGHT;
-import static org.apache.camel.Exchange.FILE_NAME;
+
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ERROR_MESSAGE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.FAILURE;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.FILE_NAME;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_EXCEPTION_HANDLED;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ROUTE_DETAILS;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_STATUS;

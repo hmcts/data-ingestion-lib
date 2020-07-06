@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.service;
 
+import static java.util.Objects.isNull;
+import static org.apache.commons.lang.StringUtils.EMPTY;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 
 import javax.mail.MessagingException;
@@ -46,11 +48,11 @@ public class EmailService implements IEmailService {
                 MimeMessageHelper mimeMsgHelperObj = new MimeMessageHelper(message, true);
                 String[] split = mailTo.split(",");
                 mimeMsgHelperObj.setTo(split);
-                mimeMsgHelperObj.setSubject(mailsubject + filename);
+                filename = isNull(filename) ? EMPTY : filename;
+                mimeMsgHelperObj.setSubject(mailsubject.concat(filename));
                 mimeMsgHelperObj.setText(messageBody);
                 mimeMsgHelperObj.setFrom(mailFrom);
                 mailSender.send(mimeMsgHelperObj.getMimeMessage());
-
             } catch (MailException | MessagingException e) {
                 log.error("{}:: Exception  while  sending mail  {}", logComponentName, getStackTrace(e));
                 throw new EmailFailureException(e);
