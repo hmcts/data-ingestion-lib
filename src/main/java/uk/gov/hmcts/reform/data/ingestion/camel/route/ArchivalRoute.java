@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
-import uk.gov.hmcts.reform.data.ingestion.camel.processor.ArchiveAzureFileProcessor;
+import uk.gov.hmcts.reform.data.ingestion.camel.processor.ArchiveFileProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.ExceptionProcessor;
 
 @Component
@@ -21,7 +21,7 @@ public class ArchivalRoute {
     ExceptionProcessor exceptionProcessor;
 
     @Autowired
-    ArchiveAzureFileProcessor archiveAzureFileProcessor;
+    ArchiveFileProcessor archiveFileProcessor;
 
     @Value("${archival-path}")
     String archivalPath;
@@ -48,7 +48,7 @@ public class ArchivalRoute {
 
                             from(archivalRoute)
                                     .loop(archivalFiles.size()).copy()
-                                    .process(archiveAzureFileProcessor)
+                                    .process(archiveFileProcessor)
                                     .toD(archivalPath + "${header.filename}?" + archivalCred)
                                     .end()
                                     .end();

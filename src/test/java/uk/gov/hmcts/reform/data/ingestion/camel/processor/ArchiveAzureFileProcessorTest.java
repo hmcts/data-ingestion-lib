@@ -16,11 +16,10 @@ import org.apache.camel.Message;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.internal.util.reflection.FieldSetter;
-import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
 
 public class ArchiveAzureFileProcessorTest {
 
-    ArchiveAzureFileProcessor azureFileProcessor = new ArchiveAzureFileProcessor();
+    ArchiveFileProcessor azureFileProcessor = new ArchiveFileProcessor();
 
     private final CamelContext camelContextMock = mock(CamelContext.class);
 
@@ -50,7 +49,6 @@ public class ArchiveAzureFileProcessorTest {
         when(camelContextMock.createConsumerTemplate()).thenReturn(consumerTemplateMock);
         when(exchangeMock.getMessage()).thenReturn(messageMock);
         when(consumerTemplateMock.receiveBody(any(String.class), any(Long.class))).thenReturn(file);
-        when(messageMock.getHeader(MappingConstants.LEAF_ROUTE)).thenReturn(MappingConstants.LEAF_ROUTE);
 
         FieldSetter.setField(azureFileProcessor, azureFileProcessor
                 .getClass().getDeclaredField("archivalFileNames"), archivalFileNames);

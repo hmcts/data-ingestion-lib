@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.data.ingestion.camel.exception.EmailFailureException;
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Slf4j
-public class EmailService implements IEmailService {
+public class EmailServiceImpl implements IEmailService {
 
     @Autowired
     JavaMailSender mailSender;
@@ -57,6 +57,8 @@ public class EmailService implements IEmailService {
                 log.error("{}:: Exception  while  sending mail  {}", logComponentName, getStackTrace(e));
                 throw new EmailFailureException(e);
             }
+        } else {
+            log.info("{}:: Exception in data ingestion, but emails alerts has been disabled", logComponentName);
         }
     }
 

@@ -24,7 +24,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 @Slf4j
 @Component
-public abstract class DefaultAuditProcessingService implements IAuditService {
+public class AuditServiceImpl implements IAuditService {
 
     @Value("${audit-enable}")
     protected Boolean auditEnabled;
@@ -39,7 +39,6 @@ public abstract class DefaultAuditProcessingService implements IAuditService {
     @Autowired
     @Qualifier("springJdbcTransactionManager")
     protected PlatformTransactionManager platformTransactionManager;
-
 
     @Value("${scheduler-audit-select}")
     protected String getSchedulerAuditDetails;

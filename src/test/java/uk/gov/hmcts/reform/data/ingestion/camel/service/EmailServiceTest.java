@@ -17,13 +17,12 @@ import org.mockito.Mock;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.EmailFailureException;
-import uk.gov.hmcts.reform.data.ingestion.camel.service.EmailService;
 
 
 public class EmailServiceTest {
 
     @InjectMocks
-    EmailService emailService;
+    EmailServiceImpl emailServiceImpl;
 
     @Mock
     JavaMailSender mailSender;
@@ -52,16 +51,16 @@ public class EmailServiceTest {
         messageBody = "Test";
         filename = "File1.csv";
         mailEnabled = true;
-        setField(emailService, "mailFrom", mailFrom);
-        setField(emailService, "mailTo", mailTo);
-        setField(emailService, "mailsubject", mailsubject);
-        setField(emailService, "mailEnabled", Boolean.TRUE);
+        setField(emailServiceImpl, "mailFrom", mailFrom);
+        setField(emailServiceImpl, "mailTo", mailTo);
+        setField(emailServiceImpl, "mailsubject", mailsubject);
+        setField(emailServiceImpl, "mailEnabled", Boolean.TRUE);
     }
 
     @Test
     public void testSendEmail() {
         doNothing().when(mailSender).send(any(MimeMessage.class));
-        emailService.sendEmail(messageBody, filename);
+        emailServiceImpl.sendEmail(messageBody, filename);
         assertEquals("Test", messageBody);
         assertEquals("File1.csv", filename);
 
@@ -71,13 +70,13 @@ public class EmailServiceTest {
     public void testSendEmailException() {
         EmailFailureException emailFailureException = new EmailFailureException(new Throwable());
         doThrow(emailFailureException).when(mailSender).send(any(MimeMessage.class));
-        emailService.sendEmail("Test", "File1.csv");
+        emailServiceImpl.sendEmail("Test", "File1.csv");
     }
 
     @Test(expected = EmailFailureException.class)
     public void testMailException() {
         MailException emailFailureException = mock(MailException.class);
         doThrow(emailFailureException).when(mailSender).send(any(MimeMessage.class));
-        emailService.sendEmail("Test", "File1.csv");
+        emailServiceImpl.sendEmail("Test", "File1.csv");
     }
 }

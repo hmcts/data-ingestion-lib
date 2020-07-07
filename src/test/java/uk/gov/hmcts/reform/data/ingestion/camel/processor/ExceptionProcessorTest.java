@@ -12,12 +12,12 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import uk.gov.hmcts.reform.data.ingestion.camel.service.EmailService;
+import uk.gov.hmcts.reform.data.ingestion.camel.service.EmailServiceImpl;
 import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
 
 public class ExceptionProcessorTest extends CamelTestSupport {
     @Mock
-    EmailService emailService;
+    EmailServiceImpl emailServiceImpl;
 
     @InjectMocks
     ExceptionProcessor exceptionProcessor;
