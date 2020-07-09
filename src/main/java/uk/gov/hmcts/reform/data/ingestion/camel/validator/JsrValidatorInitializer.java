@@ -163,7 +163,8 @@ public class JsrValidatorInitializer<T> {
      */
     public void auditJsrExceptions(List<String> keys, String fieldInError, Exchange exchange) {
 
-        log.info("{}:: JsrValidatorInitializer data processing audit start for skipping parent table violation {}", logComponentName);
+        log.info("{}:: JsrValidatorInitializer data processing audit start for skipping parent table violation {}",
+            logComponentName);
 
         DefaultTransactionDefinition def = new DefaultTransactionDefinition();
         def.setName("Jsr exception logs");
@@ -191,7 +192,8 @@ public class JsrValidatorInitializer<T> {
 
         TransactionStatus status = platformTransactionManager.getTransaction(def);
         platformTransactionManager.commit(status);
-        log.info("{}:: JsrValidatorInitializer data processing audit complete for skipping parent table violation::", logComponentName);
+        log.info("{}:: JsrValidatorInitializer data processing audit complete for skipping parent table violation::",
+            logComponentName);
     }
 
     /**

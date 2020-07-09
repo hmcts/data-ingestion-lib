@@ -51,6 +51,6 @@ public class MappingConstants {
 
     public static final String ERROR_MESSAGE = "ErrorMessage";
 
-    public static final String INVALID_JSR_PARENT = "Record skipped due to jsr violation in the record in the parent load";
-
+    public static final String INVALID_JSR_PARENT = "Record skipped due to jsr violation in the record"
+        .concat(" in the parent load");
 }

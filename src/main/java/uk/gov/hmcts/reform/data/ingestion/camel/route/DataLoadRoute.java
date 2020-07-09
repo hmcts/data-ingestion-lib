@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.route;
 
 import static org.apache.commons.lang.WordUtils.uncapitalize;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DIRECT_ROUTE;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.MAPPING_METHOD;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -70,8 +72,8 @@ public class DataLoadRoute {
 
                             String[] multiCastRoute = createDirectRoutesForMulticast(routesToExecute);
 
-                            //Started direct route with multicast all the configured routes eg.application-jrd-router.yaml
-                            //with Transaction propagation required
+                            //Started direct route with multi-cast all the configured routes with
+                            //Transaction propagation required eg.application-jrd-router.yaml(rd-judicial-data-load)
                             from(startRoute)
                                     .transacted()
                                     .policy(springTransactionPolicy)
@@ -84,7 +86,7 @@ public class DataLoadRoute {
 
                                 Expression exp = new SimpleExpression(route.getBlobPath());
 
-                                from(MappingConstants.DIRECT_ROUTE + route.getRouteName()).id(MappingConstants.DIRECT_ROUTE + route.getRouteName())
+                                from(DIRECT_ROUTE + route.getRouteName()).id(DIRECT_ROUTE + route.getRouteName())
                                         .transacted()
                                         .policy(springTransactionPolicy)
                                         .setHeader(MappingConstants.ROUTE_DETAILS, () -> route)
@@ -97,14 +99,15 @@ public class DataLoadRoute {
                                         .process((Processor) applicationContext.getBean(route.getProcessor()))
                                         .split().body()
                                         .streaming()
-                                        .bean(applicationContext.getBean(route.getMapper()), MappingConstants.MAPPING_METHOD)
+                                        .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
                                         .to(route.getSql())
                                         .end();
                             }
                         }
                     });
         } catch (Exception ex) {
-            throw new FailedToCreateRouteException(" Data Load - failed to start for route ", startRoute, startRoute, ex);
+            throw new FailedToCreateRouteException(" Data Load - failed to start for route ", startRoute,
+                startRoute, ex);
         }
     }
 
@@ -112,7 +115,7 @@ public class DataLoadRoute {
         int index = 0;
         String[] directRouteNameList = new String[routeList.size()];
         for (String child : routeList) {
-            directRouteNameList[index] = (MappingConstants.DIRECT_ROUTE).concat(child);
+            directRouteNameList[index] = (DIRECT_ROUTE).concat(child);
             index++;
         }
         return directRouteNameList;

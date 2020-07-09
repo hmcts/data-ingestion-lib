@@ -77,7 +77,8 @@ public class DataSourceConfig {
 
     @Bean(name = "springJdbcTransactionManager")
     public PlatformTransactionManager springJdbcTransactionManager() {
-        DataSourceTransactionManager platformTransactionManager = new DataSourceTransactionManager(springJdbcDataSource());
+        DataSourceTransactionManager platformTransactionManager = new DataSourceTransactionManager(
+            springJdbcDataSource());
         return platformTransactionManager;
     }
 }

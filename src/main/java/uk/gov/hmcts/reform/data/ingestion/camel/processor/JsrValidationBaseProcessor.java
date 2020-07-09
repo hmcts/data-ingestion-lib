@@ -36,7 +36,8 @@ public abstract class JsrValidationBaseProcessor<T> implements Processor {
 
         if (nonNull(jsrValidatorInitializer.getConstraintViolations())
                 && jsrValidatorInitializer.getConstraintViolations().size() > 0) {
-            log.warn("{}:: Jsr exception in {} {} ", logComponentName, getClass().getSimpleName(), "Please check database table");
+            log.warn("{}:: Jsr exception in {} {} ", logComponentName, getClass().getSimpleName(),
+                "Please check database table");
             //Auditing JSR exceptions in exception table
             jsrValidatorInitializer.auditJsrExceptions(exchange);
             exchange.getContext().getGlobalOptions().put(SCHEDULER_STATUS, MappingConstants.PARTIAL_SUCCESS);
@@ -46,7 +47,8 @@ public abstract class JsrValidationBaseProcessor<T> implements Processor {
         if (FALSE.equals(jsrThresholdLimit == 0)
                 && jsrValidatorInitializer.getConstraintViolations().size() > jsrThresholdLimit) {
             exchange.getContext().getGlobalOptions().put(SCHEDULER_STATUS, FAILURE);
-            throw new RouteFailedException("Jsr exception exceeds threshold limit in " + this.getClass().getSimpleName());
+            throw new RouteFailedException("Jsr exception exceeds threshold limit in "
+                + this.getClass().getSimpleName());
         }
     }
 
