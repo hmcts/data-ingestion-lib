@@ -39,6 +39,9 @@ public class EmailServiceImpl implements IEmailService {
     @Value("${logging-component-name:data_ingestion}")
     private String logComponentName;
 
+    @Value("${environment:''}")
+    private String environmentName;
+
     public void sendEmail(String messageBody, String filename) {
 
         if (mailEnabled) {
@@ -49,7 +52,7 @@ public class EmailServiceImpl implements IEmailService {
                 String[] split = mailTo.split(",");
                 mimeMsgHelperObj.setTo(split);
                 filename = isNull(filename) ? EMPTY : filename;
-                mimeMsgHelperObj.setSubject(mailsubject.concat(filename));
+                mimeMsgHelperObj.setSubject(environmentName.concat("::" + mailsubject.concat(filename)));
                 mimeMsgHelperObj.setText(messageBody);
                 mimeMsgHelperObj.setFrom(mailFrom);
                 mailSender.send(mimeMsgHelperObj.getMimeMessage());
