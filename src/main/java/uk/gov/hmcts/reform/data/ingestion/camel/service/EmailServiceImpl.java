@@ -39,7 +39,7 @@ public class EmailServiceImpl implements IEmailService {
     @Value("${logging-component-name:data_ingestion}")
     private String logComponentName;
 
-    @Value("${environment:''}")
+    @Value("${ENV_NAME:''}")
     private String environmentName;
 
     public void sendEmail(String messageBody, String filename) {
