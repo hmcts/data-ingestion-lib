@@ -47,7 +47,7 @@ def versions = [
         springBoot         : '2.3.1.RELEASE',
         springHystrix      : '2.1.1.RELEASE',
         springfoxSwagger   : '2.9.2',
-        camel              : '2.25.2'
+        camel              : '2.25.1'
 ]
 
 mainClassName = 'uk.gov.hmcts.reform.*'
