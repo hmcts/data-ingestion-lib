@@ -47,7 +47,7 @@ def versions = [
         springBoot         : '2.3.1.RELEASE',
         springHystrix      : '2.1.1.RELEASE',
         springfoxSwagger   : '2.9.2',
-        camel              : '2.25.1'
+        camel              : '2.25.2'
 ]
 
 mainClassName = 'uk.gov.hmcts.reform.*'
@@ -344,7 +344,7 @@ dependencies {
     compile group: 'org.apache.camel', name: 'camel-spring-boot-starter', version: versions.camel
 
     compile group: 'org.apache.camel', name: 'camel-core', version: versions.camel
-    compile group: 'org.apache.camel', name: 'spi-annotations', version: '3.3.0'
+    compile group: 'org.apache.camel', name: 'spi-annotations', version: '3.4.1'
 
     compile group: 'com.opencsv', name: 'opencsv', version: '3.7'
     compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
