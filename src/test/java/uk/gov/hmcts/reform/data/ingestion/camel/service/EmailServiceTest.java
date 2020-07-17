@@ -55,6 +55,7 @@ public class EmailServiceTest {
         setField(emailServiceImpl, "mailTo", mailTo);
         setField(emailServiceImpl, "mailsubject", mailsubject);
         setField(emailServiceImpl, "mailEnabled", Boolean.TRUE);
+        setField(emailServiceImpl, "environmentName","");
     }
 
     @Test
