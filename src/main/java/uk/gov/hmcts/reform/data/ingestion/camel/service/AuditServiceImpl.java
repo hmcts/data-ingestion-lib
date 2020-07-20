@@ -2,7 +2,10 @@ package uk.gov.hmcts.reform.data.ingestion.camel.service;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.lang.Long.valueOf;
+import static java.lang.System.currentTimeMillis;
 import static java.util.Objects.isNull;
+
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_NAME;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_STATUS;
@@ -24,7 +27,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 @Slf4j
 @Component
-public abstract class DefaultAuditProcessingService implements IAuditService {
+public class AuditServiceImpl implements IAuditService {
 
     @Value("${audit-enable}")
     protected Boolean auditEnabled;
@@ -39,7 +42,6 @@ public abstract class DefaultAuditProcessingService implements IAuditService {
     @Autowired
     @Qualifier("springJdbcTransactionManager")
     protected PlatformTransactionManager platformTransactionManager;
-
 
     @Value("${scheduler-audit-select}")
     protected String getSchedulerAuditDetails;
@@ -57,11 +59,13 @@ public abstract class DefaultAuditProcessingService implements IAuditService {
 
         Map<String, String> globalOptions = camelContext.getGlobalOptions();
 
-        Timestamp schedulerStartTime = new Timestamp(Long.valueOf((globalOptions.get(SCHEDULER_START_TIME))));
+        Timestamp schedulerStartTime = new Timestamp(valueOf((globalOptions.get(SCHEDULER_START_TIME))));
         String schedulerName = globalOptions.get(SCHEDULER_NAME);
-        String schedulerStatus = isNull(globalOptions.get(SCHEDULER_STATUS)) ? SUCCESS : globalOptions.get(SCHEDULER_STATUS);
+        String schedulerStatus = isNull(globalOptions.get(SCHEDULER_STATUS)) ? SUCCESS
+            : globalOptions.get(SCHEDULER_STATUS);
 
-        jdbcTemplate.update(schedulerInsertSql, schedulerName, schedulerStartTime, new Timestamp(System.currentTimeMillis()), schedulerStatus);
+        jdbcTemplate.update(schedulerInsertSql, schedulerName, schedulerStartTime, new Timestamp(currentTimeMillis()),
+            schedulerStatus);
         TransactionStatus status = platformTransactionManager.getTransaction(def);
         platformTransactionManager.commit(status);
     }

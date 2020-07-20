@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ArchiveAzureFileProcessor implements Processor {
+public class ArchiveFileProcessor implements Processor {
 
     @Value("${archival-file-names}")
     List<String> archivalFileNames;

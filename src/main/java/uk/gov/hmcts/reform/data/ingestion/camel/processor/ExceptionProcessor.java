@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
-import uk.gov.hmcts.reform.data.ingestion.camel.service.EmailService;
+import uk.gov.hmcts.reform.data.ingestion.camel.service.EmailServiceImpl;
 
 @Component
 @Slf4j
@@ -32,7 +32,7 @@ public class ExceptionProcessor implements Processor {
     CamelContext camelContext;
 
     @Autowired
-    EmailService emailService;
+    EmailServiceImpl emailServiceImpl;
 
     @Value("${logging-component-name:data_ingestion}")
     private String logComponentName;

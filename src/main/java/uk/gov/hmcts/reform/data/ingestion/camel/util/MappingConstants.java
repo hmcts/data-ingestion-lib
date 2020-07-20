@@ -5,25 +5,11 @@ public class MappingConstants {
     private MappingConstants() {
     }
 
-    public static final String DATE_PATTERN = "\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}";
-
-    public static final String DATE_PATTERN_TIMESTAMP = "\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{4,9}";
-
     public static final String DATE_FORMAT = "yyyy-MM-dd hh:mm:ss";
-
-    public static final String DATE_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:MI:SS.MSUS";
-
-    public static final String ORCHESTRATED_ROUTE = "parent-route";
 
     public static final String SCHEDULER_START_TIME = "start-time";
 
-    public static final String CHILD_ROUTES = "child-route";
-
     public static final String ROUTE = "route";
-
-    public static final String LEAF_ROUTE = "leaf-route";
-
-    public static final String LEAF_ROUTE_NAMES = "leaf-route-names";
 
     public static final String INSERT_SQL = "insert-sql";
 
@@ -49,8 +35,6 @@ public class MappingConstants {
 
     public static final String ROUTE_DETAILS = "routedetails";
 
-    public static final String JUDICIAL_USER_PROFILE_ORCHESTRATION = "judicial-user-profile-orchestration";
-
     public static final String DIRECT_ROUTE = "direct:";
 
     public static final String IS_EXCEPTION_HANDLED = "is-exception-handled";
@@ -67,8 +51,6 @@ public class MappingConstants {
 
     public static final String ERROR_MESSAGE = "ErrorMessage";
 
-    public static final String INVALID_JSR_PARENT = "Record skipped due to jsr violation in the record in the parent load";
-
-    public static final String ELINKS_ID = "elinks_id";
-
+    public static final String INVALID_JSR_PARENT = "Record skipped due to jsr violation in the record"
+        .concat(" in the parent load");
 }
