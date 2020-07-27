@@ -301,9 +301,6 @@ dependencies {
     }
     compile group: 'io.github.openfeign.form', name: 'feign-form', version: '3.8.0'
     compile group: 'io.github.openfeign.form', name: 'feign-form-spring', version: '3.8.0'
-    testCompile (group: 'io.rest-assured', name: 'rest-assured', version: '4.3.1') {
-        exclude group: "com.sun.xml.bind", module: "jaxb-osgi"
-    }
 
     compile group: 'com.sun.xml.bind', name: 'jaxb-osgi', version: '2.3.3'
     compile group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
@@ -359,6 +356,9 @@ dependencies {
     smokeTestCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
     smokeTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
+    testCompile (group: 'io.rest-assured', name: 'rest-assured', version: '4.3.1') {
+        exclude group: "com.sun.xml.bind", module: "jaxb-osgi"
+    }
     testCompile("org.hamcrest:hamcrest-junit:2.0.0.0") {
         exclude group: "org.hamcrest", module: "hamcrest-core"
         exclude group: "org.hamcrest", module: "hamcrest-library"
