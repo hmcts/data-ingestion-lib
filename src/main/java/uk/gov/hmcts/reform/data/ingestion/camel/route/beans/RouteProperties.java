@@ -15,6 +15,8 @@ public class RouteProperties {
 
     String sql;
 
+    String deleteSql;
+
     String truncateSql;
 
     String blobPath;

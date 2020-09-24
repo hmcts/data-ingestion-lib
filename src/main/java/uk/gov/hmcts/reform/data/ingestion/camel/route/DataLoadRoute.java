@@ -1,13 +1,7 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.route;
 
-import static org.apache.commons.lang.WordUtils.uncapitalize;
-import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DIRECT_ROUTE;
-import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.MAPPING_METHOD;
-
-import java.util.LinkedList;
-import java.util.List;
-
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
 import org.apache.camel.Expression;
 import org.apache.camel.FailedToCreateRouteException;
 import org.apache.camel.Processor;
@@ -25,6 +19,15 @@ import uk.gov.hmcts.reform.data.ingestion.camel.processor.FileReadProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.HeaderValidationProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang.WordUtils.uncapitalize;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DIRECT_ROUTE;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.MAPPING_METHOD;
 
 /**
  * This class is Judicial User Profile Router Triggers Orchestrated data loading.
@@ -58,58 +61,70 @@ public class DataLoadRoute {
 
         List<RouteProperties> routePropertiesList = getRouteProperties(routesToExecute);
 
+
         try {
             camelContext.addRoutes(
-                    new SpringRouteBuilder() {
-                        @Override
-                        public void configure() throws Exception {
+                new SpringRouteBuilder() {
+                    @Override
+                    public void configure() throws Exception {
 
-                            onException(Exception.class)
-                                    .handled(true)
-                                    .process(exceptionProcessor)
-                                    .markRollbackOnly()
-                                    .end();
+                        onException(Exception.class)
+                            .handled(true)
+                            .process(exceptionProcessor)
+                            .markRollbackOnly()
+                            .end();
 
-                            String[] multiCastRoute = createDirectRoutesForMulticast(routesToExecute);
+                        String[] multiCastRoute = createDirectRoutesForMulticast(routesToExecute);
 
-                            //Started direct route with multi-cast all the configured routes with
-                            //Transaction propagation required eg.application-jrd-router.yaml(rd-judicial-data-load)
-                            from(startRoute)
-                                    .transacted()
-                                    .policy(springTransactionPolicy)
-                                    .multicast()
-                                    .stopOnException()
-                                    .to(multiCastRoute).end();
+                        //Started direct route with multi-cast all the configured routes with
+                        //Transaction propagation required eg.application-jrd-router.yaml(rd-judicial-data-load)
+                        from(startRoute)
+                            .transacted()
+                            .policy(springTransactionPolicy)
+                            .multicast()
+                            .stopOnException()
+                            .to(multiCastRoute).end();
 
 
-                            for (RouteProperties route : routePropertiesList) {
+                        for (RouteProperties route : routePropertiesList) {
 
-                                Expression exp = new SimpleExpression(route.getBlobPath());
+                            Expression exp = new SimpleExpression(route.getBlobPath());
+                            List<String> sqls = new ArrayList<>();
+                            int loopCount = getLoopCount(route, sqls);
 
-                                from(DIRECT_ROUTE + route.getRouteName()).id(DIRECT_ROUTE + route.getRouteName())
-                                        .transacted()
-                                        .policy(springTransactionPolicy)
-                                        .setHeader(MappingConstants.ROUTE_DETAILS, () -> route)
-                                        .setProperty(MappingConstants.BLOBPATH, exp)
-                                        .process(fileReadProcessor)
-                                        .process(headerValidationProcessor)
-                                        .split(body()).unmarshal().bindy(BindyType.Csv,
-                                        applicationContext.getBean(route.getBinder()).getClass())
-                                        .to(route.getTruncateSql())
-                                        .process((Processor) applicationContext.getBean(route.getProcessor()))
-                                        .split().body()
-                                        .streaming()
-                                        .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
-                                        .to(route.getSql())
-                                        .end();
-                            }
+                            from(DIRECT_ROUTE + route.getRouteName()).id(DIRECT_ROUTE + route.getRouteName())
+                                .transacted()
+                                .policy(springTransactionPolicy)
+                                .setHeader(MappingConstants.ROUTE_DETAILS, () -> route)
+                                .setProperty(MappingConstants.BLOBPATH, exp)
+                                .process(fileReadProcessor)
+                                .process(headerValidationProcessor)
+                                .split(body()).unmarshal().bindy(BindyType.Csv,
+                                applicationContext.getBean(route.getBinder()).getClass())
+                                .to(route.getTruncateSql())
+                                .process((Processor) applicationContext.getBean(route.getProcessor()))
+                                .loop(loopCount)
+                                    //delete & Insert process
+                                    .process((Processor) applicationContext.getBean(route.getProcessor()))
+                                    .split().body()
+                                    .streaming()
+                                    .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
+                                    .process(exchange -> {
+                                        Integer index = (Integer) exchange.getProperty(Exchange.LOOP_INDEX);
+                                        exchange.getIn().setHeader("sqlToExecute", sqls.get(index));
+                                    })
+                                    .toD("${header.sqlToExecute}")
+                                    .end()
+                                .end();
                         }
-                    });
+                    }
+                });
         } catch (Exception ex) {
             throw new FailedToCreateRouteException(" Data Load - failed to start for route ", startRoute,
                 startRoute, ex);
         }
     }
+
 
     private String[] createDirectRoutesForMulticast(List<String> routeList) {
         int index = 0;
@@ -133,28 +148,38 @@ public class DataLoadRoute {
         for (String routeName : routes) {
             RouteProperties properties = new RouteProperties();
             properties.setRouteName(environment.getProperty(
-                    MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.ID));
+                MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.ID));
             properties.setSql(environment.getProperty(
-                    MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.INSERT_SQL));
+                MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.INSERT_SQL));
             properties.setTruncateSql(environment.getProperty(
-                    MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.TRUNCATE_SQL)
-                    == null ? "log:test" : environment.getProperty(
-                    MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.TRUNCATE_SQL));
+                MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.TRUNCATE_SQL)
+                == null ? "log:test" : environment.getProperty(
+                MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.TRUNCATE_SQL));
             properties.setBlobPath(environment.getProperty(
-                    MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.BLOBPATH));
+                MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.BLOBPATH));
             properties.setMapper(uncapitalize(environment.getProperty(
-                    MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.MAPPER)));
+                MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.MAPPER)));
             properties.setBinder(uncapitalize(environment.getProperty(MappingConstants.ROUTE + "." + routeName + "."
-                    + MappingConstants.CSVBINDER)));
+                + MappingConstants.CSVBINDER)));
             properties.setProcessor(uncapitalize(environment.getProperty(MappingConstants.ROUTE + "." + routeName + "."
-                    + MappingConstants.PROCESSOR)));
+                + MappingConstants.PROCESSOR)));
             properties.setFileName(environment.getProperty(
-                    MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.FILE_NAME));
+                MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.FILE_NAME));
             properties.setTableName(environment.getProperty(
-                    MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.TABLE_NAME));
+                MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.TABLE_NAME));
             routePropertiesList.add(index, properties);
+            properties.setDeleteSql(environment.getProperty(MappingConstants.ROUTE + "."
+                + routeName + "." + MappingConstants.DELETE_SQL));
             index++;
         }
         return routePropertiesList;
+    }
+
+    private int getLoopCount(RouteProperties route, List<String> sqls) {
+        if ((nonNull(route.getDeleteSql()))) {
+            sqls.add(route.getDeleteSql());
+        }
+        sqls.add(route.getSql());
+        return sqls.size();
     }
 }
