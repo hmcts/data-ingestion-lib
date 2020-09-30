@@ -35,6 +35,11 @@ public class HeaderValidationProcessor implements Processor {
 
         RouteProperties routeProperties = (RouteProperties) exchange.getIn().getHeader(MappingConstants.ROUTE_DETAILS);
         String csv = exchange.getIn().getBody(String.class);
+
+        if (csv == null) {
+            throw new RouteFailedException("File is missing");
+        }
+
         CSVReader reader = new CSVReader(new StringReader(csv));
         String[] header = reader.readNext();
         Field[] allFields = applicationContext.getBean(routeProperties.getBinder())
