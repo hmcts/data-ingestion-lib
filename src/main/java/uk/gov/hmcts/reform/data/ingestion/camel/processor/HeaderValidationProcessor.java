@@ -9,6 +9,7 @@ import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
+
+import static java.util.Optional.ofNullable;
 
 @Component
 public class HeaderValidationProcessor implements Processor {
@@ -36,7 +39,7 @@ public class HeaderValidationProcessor implements Processor {
         RouteProperties routeProperties = (RouteProperties) exchange.getIn().getHeader(MappingConstants.ROUTE_DETAILS);
         String csv = exchange.getIn().getBody(String.class);
 
-        if (csv == null) {
+        if (ofNullable(csv).isEmpty()) {
             throw new RouteFailedException("File is missing");
         }
 
