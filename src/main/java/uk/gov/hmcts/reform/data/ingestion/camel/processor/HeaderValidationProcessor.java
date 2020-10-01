@@ -39,7 +39,8 @@ public class HeaderValidationProcessor implements Processor {
         String csv = exchange.getIn().getBody(String.class);
 
         if (ofNullable(csv).isEmpty()) {
-            throw new RouteFailedException("File is missing");
+            throw new RouteFailedException(
+                    routeProperties.getFileName() + " file is not found. Please upload file and try again.");
         }
 
         CSVReader reader = new CSVReader(new StringReader(csv));
