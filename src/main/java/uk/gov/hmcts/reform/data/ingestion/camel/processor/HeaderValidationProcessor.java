@@ -40,7 +40,7 @@ public class HeaderValidationProcessor implements Processor {
 
         if (ofNullable(csv).isEmpty()) {
             throw new RouteFailedException(
-                    routeProperties.getFileName() + " file is not found. Please upload file and try again.");
+                    routeProperties.getFileName().concat(" file is not found. Please upload file and try again."));
         }
 
         CSVReader reader = new CSVReader(new StringReader(csv));
