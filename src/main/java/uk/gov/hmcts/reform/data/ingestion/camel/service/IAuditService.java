@@ -7,4 +7,7 @@ public interface IAuditService {
     void auditSchedulerStatus(final CamelContext camelContext);
 
     boolean isAuditingCompleted();
+
+    void auditException(final CamelContext camelContext, String exceptionMessage,
+                               boolean auditExceptionForFileTimeStamp);
 }

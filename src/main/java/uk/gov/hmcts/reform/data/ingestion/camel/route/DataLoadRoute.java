@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.data.ingestion.camel.route;
 
 import static org.apache.commons.lang.WordUtils.uncapitalize;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DIRECT_ROUTE;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_FILE_STALE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.MAPPING_METHOD;
 
 import java.util.LinkedList;
@@ -92,15 +93,17 @@ public class DataLoadRoute {
                                         .setHeader(MappingConstants.ROUTE_DETAILS, () -> route)
                                         .setProperty(MappingConstants.BLOBPATH, exp)
                                         .process(fileReadProcessor)
-                                        .process(headerValidationProcessor)
-                                        .split(body()).unmarshal().bindy(BindyType.Csv,
-                                        applicationContext.getBean(route.getBinder()).getClass())
-                                        .to(route.getTruncateSql())
-                                        .process((Processor) applicationContext.getBean(route.getProcessor()))
-                                        .split().body()
-                                        .streaming()
-                                        .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
-                                        .to(route.getSql())
+                                        .choice()
+                                            .when(header(IS_FILE_STALE).isEqualTo(false))
+                                                .process(headerValidationProcessor)
+                                                .split(body()).unmarshal().bindy(BindyType.Csv,
+                                                applicationContext.getBean(route.getBinder()).getClass())
+                                                .to(route.getTruncateSql())
+                                                .process((Processor) applicationContext.getBean(route.getProcessor()))
+                                                .split().body()
+                                                .streaming()
+                                                .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
+                                                .to(route.getSql())
                                         .end();
                             }
                         }
