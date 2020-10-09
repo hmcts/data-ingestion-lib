@@ -35,12 +35,12 @@ public class DataIngestionLibraryRunnerTest {
     @Test
     public void runWhenAuditingCompleteIsFalseTest() throws Exception {
         when(auditServiceImpl.isAuditingCompleted()).thenReturn(false);
-        dataIngestionLibraryRunner.run(paramsMock, jobMock);
+        dataIngestionLibraryRunner.run(jobMock, paramsMock);
     }
 
     @Test
     public void runWhenAuditingCompleteIsTrueTest() throws Exception {
         when(auditServiceImpl.isAuditingCompleted()).thenReturn(true);
-        dataIngestionLibraryRunner.run(paramsMock, jobMock);
+        dataIngestionLibraryRunner.run(jobMock, paramsMock);
     }
 }

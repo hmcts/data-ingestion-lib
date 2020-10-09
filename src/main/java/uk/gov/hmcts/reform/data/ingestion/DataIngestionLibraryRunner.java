@@ -20,7 +20,7 @@ public class DataIngestionLibraryRunner {
     @Autowired
     AuditServiceImpl auditServiceImpl;
 
-    public void run(JobParameters params, Job job) throws Exception {
+    public void run(Job job, JobParameters params) throws Exception {
 
         if (FALSE.equals(auditServiceImpl.isAuditingCompleted())) {
             log.info("Data Ingestion Library running first time for a day::");
