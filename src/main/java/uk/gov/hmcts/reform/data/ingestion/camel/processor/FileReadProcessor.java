@@ -84,7 +84,7 @@ public class FileReadProcessor implements Processor {
             fileTimeStamp = cloudBlockBlob.getProperties().getCreatedTime();
 
         } catch (Exception exp) {
-            log.error("{}:: Failed to get file timestamp :: {}", logComponentName, exp);
+            log.error("{}:: Failed to get file timestamp :: ", logComponentName, exp);
         }
         return isNull(fileTimeStamp) ? true : !DateUtils.isSameDay(fileTimeStamp, new Date());
     }
