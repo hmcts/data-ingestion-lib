@@ -50,8 +50,6 @@ public class AuditServiceImplTest {
         setField(dataLoadAuditUnderTest, "jdbcTemplate", mockJdbcTemplate);
         setField(dataLoadAuditUnderTest, "platformTransactionManager", platformTransactionManager);
         setField(dataLoadAuditUnderTest,"invalidExceptionSql", "select * from appointment");
-        //jdbcTemplate
-
         MockitoAnnotations.initMocks(this);
     }
 
