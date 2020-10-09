@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.processor;
 
 import static java.util.Objects.isNull;
+import static org.apache.commons.lang.time.DateUtils.isSameDay;
+import static org.apache.commons.lang3.BooleanUtils.negate;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.BLOBPATH;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_FILE_STALE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ROUTE_DETAILS;
@@ -15,7 +17,6 @@ import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.commons.lang.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -86,6 +87,6 @@ public class FileReadProcessor implements Processor {
         } catch (Exception exp) {
             log.error("{}:: Failed to get file timestamp :: ", logComponentName, exp);
         }
-        return isNull(fileTimeStamp) ? true : !DateUtils.isSameDay(fileTimeStamp, new Date());
+        return isNull(fileTimeStamp) ? true : negate(isSameDay(fileTimeStamp, new Date()));
     }
 }

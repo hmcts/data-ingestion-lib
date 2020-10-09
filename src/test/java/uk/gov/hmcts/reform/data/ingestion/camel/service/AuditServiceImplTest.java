@@ -58,34 +58,33 @@ public class AuditServiceImplTest {
     @Test
     public void testSchedulerAuditUpdate() throws Exception {
 
-        when(exchange.getContext()).thenReturn(camelContext);
         Map<String, String> globalOptions = getGlobalOptions(schedulerName);
+        when(exchange.getContext()).thenReturn(camelContext);
         when(exchange.getContext().getGlobalOptions()).thenReturn(globalOptions);
-        when(camelContext.getGlobalOptions()).thenReturn(globalOptions);
         when(mockJdbcTemplate.update(anyString(), anyString(), any(), any(), any())).thenReturn(1);
         when(platformTransactionManager.getTransaction(any())).thenReturn(transactionStatus);
         doNothing().when(platformTransactionManager).commit(transactionStatus);
-
         dataLoadAuditUnderTest.auditSchedulerStatus(camelContext);
-
         verify(exchange, times(1)).getContext();
         verify(camelContext, times(1)).getGlobalOptions();
+        verify(mockJdbcTemplate, times(1)).update(any(), (Object[]) any());
         verify(platformTransactionManager, times(1)).getTransaction(any());
+        verify(platformTransactionManager, times(1)).commit(transactionStatus);
     }
 
     @Test
-    public void testAuditException() throws Exception {
-
-        when(exchange.getContext()).thenReturn(camelContext);
+    public void testAuditException()  {
         Map<String, String> globalOptions = getGlobalOptions(schedulerName);
+        when(exchange.getContext()).thenReturn(camelContext);
         when(exchange.getContext().getGlobalOptions()).thenReturn(globalOptions);
-        when(camelContext.getGlobalOptions()).thenReturn(globalOptions);
-        when(mockJdbcTemplate.update(anyString(), any(), any())).thenReturn(1);
+        when(mockJdbcTemplate.update(any(), any(Object[].class))).thenReturn(1);
         when(platformTransactionManager.getTransaction(any())).thenReturn(transactionStatus);
         doNothing().when(platformTransactionManager).commit(transactionStatus);
         dataLoadAuditUnderTest.auditException(camelContext, "exceptionMessage", true);
         verify(exchange, times(1)).getContext();
         verify(camelContext, times(1)).getGlobalOptions();
+        verify(mockJdbcTemplate, times(1)).update(any(), (Object[]) any());
         verify(platformTransactionManager, times(1)).getTransaction(any());
+        verify(platformTransactionManager, times(1)).commit(transactionStatus);
     }
 }
