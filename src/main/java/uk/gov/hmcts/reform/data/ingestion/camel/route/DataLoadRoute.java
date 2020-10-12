@@ -105,7 +105,6 @@ public class DataLoadRoute {
                                 .process((Processor) applicationContext.getBean(route.getProcessor()))
                                 .loop(loopCount)
                                     //delete & Insert process
-                                    .process((Processor) applicationContext.getBean(route.getProcessor()))
                                     .split().body()
                                     .streaming()
                                     .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
