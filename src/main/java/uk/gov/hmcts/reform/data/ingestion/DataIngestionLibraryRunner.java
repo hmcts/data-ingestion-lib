@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.data.ingestion.camel.service.AuditServiceImpl;
 
-import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 
 @Slf4j
 @Component
@@ -26,17 +26,13 @@ public class DataIngestionLibraryRunner {
 
     public void run(Job job, JobParameters params) throws Exception {
 
-        if (isIdempotentFlagEnabled) {
-            if (FALSE.equals(auditServiceImpl.isAuditingCompleted())) {
-                log.info("Data Ingestion Library running first time for a day::");
-                jobLauncher.run(job, params);
-                log.info("Data Ingestion Library job run completed::");
-            } else {
-                log.info("no run of Data Ingestion Library as it has ran for the day::");
-            }
+        if (isIdempotentFlagEnabled && TRUE.equals(auditServiceImpl.isAuditingCompleted())) {
+            log.info("no run of Data Ingestion Library as it has ran for the day::");
             return;
         }
+        log.info("Data Ingestion Library starts::");
         jobLauncher.run(job, params);
+        log.info("Data Ingestion Library job run completed::");
     }
 
 }
