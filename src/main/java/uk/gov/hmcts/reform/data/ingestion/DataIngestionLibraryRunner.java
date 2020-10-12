@@ -24,15 +24,18 @@ public class DataIngestionLibraryRunner {
     @Value("${idempotent-flag-ingestion}")
     boolean isIdempotentFlagEnabled;
 
+    @Value("${logging-component-name:data_ingestion}")
+    private String logComponentName;
+
     public void run(Job job, JobParameters params) throws Exception {
 
         if (isIdempotentFlagEnabled && TRUE.equals(auditServiceImpl.isAuditingCompleted())) {
-            log.info("no run of Data Ingestion Library as it has ran for the day::");
+            log.info("{}:: no run of Data Ingestion Library as it has ran for the day::", logComponentName);
             return;
         }
-        log.info("Data Ingestion Library starts::");
+        log.info("{}:: Data Ingestion Library starts::", logComponentName);
         jobLauncher.run(job, params);
-        log.info("Data Ingestion Library job run completed::");
+        log.info("{}:: Data Ingestion Library job run completed::", logComponentName);
     }
 
 }
