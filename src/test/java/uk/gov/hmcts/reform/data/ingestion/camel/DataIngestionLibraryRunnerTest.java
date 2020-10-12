@@ -10,6 +10,8 @@ import org.springframework.batch.core.launch.JobLauncher;
 import uk.gov.hmcts.reform.data.ingestion.DataIngestionLibraryRunner;
 import uk.gov.hmcts.reform.data.ingestion.camel.service.AuditServiceImpl;
 
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -36,11 +38,18 @@ public class DataIngestionLibraryRunnerTest {
     public void runWhenAuditingCompleteIsFalseTest() throws Exception {
         when(auditServiceImpl.isAuditingCompleted()).thenReturn(false);
         dataIngestionLibraryRunner.run(jobMock, paramsMock);
+        verify(jobLauncherMock, times(1)).run(jobMock, paramsMock);
     }
 
     @Test
     public void runWhenAuditingCompleteIsTrueTest() throws Exception {
         when(auditServiceImpl.isAuditingCompleted()).thenReturn(true);
         dataIngestionLibraryRunner.run(jobMock, paramsMock);
+    }
+
+    @Test
+    public void runWhenIdempotentIsFalse() throws Exception {
+        dataIngestionLibraryRunner.run(jobMock, paramsMock);
+        verify(jobLauncherMock, times(1)).run(jobMock, paramsMock);
     }
 }
