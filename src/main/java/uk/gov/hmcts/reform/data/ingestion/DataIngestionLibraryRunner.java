@@ -34,9 +34,9 @@ public class DataIngestionLibraryRunner {
             } else {
                 log.info("no run of Data Ingestion Library as it has ran for the day::");
             }
-        } else {
-            jobLauncher.run(job, params);
+            return;
         }
+        jobLauncher.run(job, params);
     }
 
 }
