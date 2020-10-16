@@ -21,7 +21,4 @@ azure:
     container-name: ${CONTAINER_NAME:CONTAINER_NAME}
     blob-url-suffix: ${BLOB_URL_SUFFIX:BLOB_URL_SUFFIX}
 
-
-
-
-
+idempotent-flag-ingestion: ${idempotent-flag:true}
