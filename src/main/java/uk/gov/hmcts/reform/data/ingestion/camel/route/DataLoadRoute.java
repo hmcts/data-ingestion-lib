@@ -27,6 +27,7 @@ import java.util.List;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang.WordUtils.uncapitalize;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DIRECT_ROUTE;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_FILE_STALE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.MAPPING_METHOD;
 
 /**
@@ -98,12 +99,15 @@ public class DataLoadRoute {
                                 .setHeader(MappingConstants.ROUTE_DETAILS, () -> route)
                                 .setProperty(MappingConstants.BLOBPATH, exp)
                                 .process(fileReadProcessor)
+                                .choice()
+                                .when(header(IS_FILE_STALE).isEqualTo(false))
+
                                 .process(headerValidationProcessor)
                                 .split(body()).unmarshal().bindy(BindyType.Csv,
                                 applicationContext.getBean(route.getBinder()).getClass())
                                 .to(route.getTruncateSql())
                                 .process((Processor) applicationContext.getBean(route.getProcessor()))
-                                .loop(loopCount)
+                                    .loop(loopCount)
                                     //delete & Insert process
                                     .split().body()
                                     .streaming()

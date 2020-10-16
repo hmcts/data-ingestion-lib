@@ -53,6 +53,10 @@ public class MappingConstants {
 
     public static final String ERROR_MESSAGE = "ErrorMessage";
 
+    public static final String IS_FILE_STALE = "ISFILESTALE";
+
+    public static final String FILENOTPRESENT_ERRORMESSAGE = "File not present";
+
     public static final String INVALID_JSR_PARENT = "Record skipped due to jsr violation in the record"
         .concat(" in the parent load");
 }
