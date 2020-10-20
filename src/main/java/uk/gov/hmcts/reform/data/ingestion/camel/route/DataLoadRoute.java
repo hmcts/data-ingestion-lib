@@ -99,26 +99,26 @@ public class DataLoadRoute {
                                 .setHeader(MappingConstants.ROUTE_DETAILS, () -> route)
                                 .setProperty(MappingConstants.BLOBPATH, exp)
                                 .process(fileReadProcessor)
-                                .choice()
-                                .when(header(IS_FILE_STALE).isEqualTo(false))
-
-                                .process(headerValidationProcessor)
-                                .split(body()).unmarshal().bindy(BindyType.Csv,
-                                applicationContext.getBean(route.getBinder()).getClass())
-                                .to(route.getTruncateSql())
-                                .process((Processor) applicationContext.getBean(route.getProcessor()))
-                                    .loop(loopCount)
-                                    //delete & Insert process
-                                    .split().body()
-                                    .streaming()
-                                    .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
-                                    .process(exchange -> {
-                                        Integer index = (Integer) exchange.getProperty(Exchange.LOOP_INDEX);
-                                        exchange.getIn().setHeader("sqlToExecute", sqls.get(index));
-                                    })
-                                    .toD("${header.sqlToExecute}")
-                                    .end()
-                                .end();
+                                    .choice()
+                                        .when(header(IS_FILE_STALE).isEqualTo(false))
+                                            .process(headerValidationProcessor)
+                                            .split(body()).unmarshal().bindy(BindyType.Csv,
+                                            applicationContext.getBean(route.getBinder()).getClass())
+                                            .to(route.getTruncateSql())
+                                            .process((Processor) applicationContext.getBean(route.getProcessor()))
+                                            .loop(loopCount)
+                                                //delete & Insert process
+                                                .split().body()
+                                                .streaming()
+                                                .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
+                                                .process(exchange -> {
+                                                    Integer index = (Integer) exchange.getProperty(Exchange.LOOP_INDEX);
+                                                    exchange.getIn().setHeader("sqlToExecute", sqls.get(index));
+                                                })
+                                            .toD("${header.sqlToExecute}")
+                                            .end() //end loop
+                                    .endChoice() //end choice
+                                .end(); //end route
                         }
                     }
                 });

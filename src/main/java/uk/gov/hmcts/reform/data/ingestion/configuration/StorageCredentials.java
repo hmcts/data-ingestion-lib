@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.data.ingestion.configuration;
 
+import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageCredentialsAccountAndKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +16,11 @@ public class StorageCredentials {
     public com.microsoft.azure.storage.StorageCredentials credentials() {
 
         return new StorageCredentialsAccountAndKey(azureBlobConfig.getAccountName(), azureBlobConfig.getAccountKey());
+    }
 
+    @Bean
+    public CloudStorageAccount cloudStorageAccount() throws Exception {
+        return new CloudStorageAccount(credentials(),
+            true);
     }
 }

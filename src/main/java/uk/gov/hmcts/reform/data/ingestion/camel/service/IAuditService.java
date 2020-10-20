@@ -8,6 +8,5 @@ public interface IAuditService {
 
     boolean isAuditingCompleted();
 
-    void auditException(final CamelContext camelContext, String exceptionMessage,
-                               boolean auditExceptionForFileTimeStamp);
+    void auditException(final CamelContext camelContext, String exceptionMessage);
 }

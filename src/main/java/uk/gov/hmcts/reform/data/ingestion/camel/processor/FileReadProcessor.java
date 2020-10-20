@@ -1,12 +1,5 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.processor;
 
-import static java.util.Objects.isNull;
-import static org.apache.commons.lang.time.DateUtils.isSameDay;
-import static org.apache.commons.lang3.BooleanUtils.negate;
-import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.BLOBPATH;
-import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_FILE_STALE;
-import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ROUTE_DETAILS;
-
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
@@ -22,45 +15,65 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import uk.gov.hmcts.reform.data.ingestion.camel.service.AuditServiceImpl;
+import uk.gov.hmcts.reform.data.ingestion.camel.util.BlobStatus;
 import uk.gov.hmcts.reform.data.ingestion.configuration.AzureBlobConfig;
+
 import java.util.Date;
+
+import static org.apache.commons.lang.time.DateUtils.isSameDay;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.BlobStatus.NEW;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.BlobStatus.NOT_EXISTS;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.BlobStatus.STALE;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.BLOBPATH;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_FILE_STALE;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ROUTE_DETAILS;
 
 @Slf4j
 @Component
 public class FileReadProcessor implements Processor {
 
     @Value("${file-read-time-out}")
-    protected int fileReadTimeOut;
+    private int fileReadTimeOut;
 
     @Value("${logging-component-name:data_ingestion}")
-    protected String logComponentName;
+    private String logComponentName;
 
     @Autowired
-    protected AzureBlobConfig azureBlobConfig;
+    private AzureBlobConfig azureBlobConfig;
 
     @Autowired
-    protected AuditServiceImpl auditService;
+    private AuditServiceImpl auditService;
 
-    protected Date fileTimeStamp;
+    private Date fileTimeStamp;
+
+    @Autowired
+    CloudStorageAccount cloudStorageAccount;
 
     @Override
-    public void process(Exchange exchange) {
+    public void process(Exchange exchange) throws Exception {
         log.info("{}:: FileReadProcessor starts::", logComponentName);
         String blobFilePath = (String) exchange.getProperty(BLOBPATH);
         CamelContext context = exchange.getContext();
         ConsumerTemplate consumer = context.createConsumerTemplate();
         RouteProperties routeProperties = (RouteProperties) exchange.getIn().getHeader(ROUTE_DETAILS);
         String fileName = routeProperties.getFileName();
-        if (isFileTimeStampStale(fileName)) {
+
+        //Check Stale OR Not existing file and exit run with proper error message
+        if (getFileStatusInBlobContainer(fileName).equals(STALE)) {
             exchange.getMessage().setHeader(IS_FILE_STALE, true);
             auditService.auditException(exchange.getContext(), String.format(
-                    "%s file with timestamp %s not loaded due to file stale error",
-                    routeProperties.getFileName(),
-                    DateFormatUtils.format(fileTimeStamp, "yyyy-MM-dd HH:mm:SS")), true);
-        } else {
-            exchange.getMessage().setHeader(IS_FILE_STALE, false);
-            exchange.getMessage().setBody(consumer.receiveBody(blobFilePath, fileReadTimeOut));
+                "%s file with timestamp %s not loaded due to file stale error",
+                fileName,
+                DateFormatUtils.format(fileTimeStamp, "yyyy-MM-dd HH:mm:SS")));
+            return;
+        } else if (getFileStatusInBlobContainer(fileName).equals(NOT_EXISTS)) {
+            auditService.auditException(exchange.getContext(), String.format(
+                "%s file is not exists in container", routeProperties.getFileName()));
+            return;
         }
+
+        exchange.getMessage().setHeader(IS_FILE_STALE, false);
+        exchange.getMessage().setBody(consumer.receiveBody(blobFilePath, fileReadTimeOut));
     }
 
     /**
@@ -69,24 +82,24 @@ public class FileReadProcessor implements Processor {
      * @param fileName for getting timestamp of
      * @return is File TimeStamp Stale
      */
-    private boolean isFileTimeStampStale(String fileName) {
+    private BlobStatus getFileStatusInBlobContainer(String fileName) throws Exception {
+        BlobStatus blobStatus = NEW;
         try {
-            final String storageConnectionString = "DefaultEndpointsProtocol=https"
-                    .concat(";AccountName=" + azureBlobConfig.getAccountName())
-                    .concat(";AccountKey=" + azureBlobConfig.getAccountKey());
-
-            final CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
             CloudBlobClient blobClient = cloudStorageAccount.createCloudBlobClient();
             CloudBlobContainer container =
-                    blobClient.getContainerReference(azureBlobConfig.getContainerName());
+                blobClient.getContainerReference(azureBlobConfig.getContainerName());
 
             CloudBlockBlob cloudBlockBlob = container.getBlockBlobReference(fileName);
-            cloudBlockBlob.downloadAttributes();
-            fileTimeStamp = cloudBlockBlob.getProperties().getCreatedTime();
 
+            if (cloudBlockBlob.exists()) {
+                cloudBlockBlob.downloadAttributes();
+                fileTimeStamp = cloudBlockBlob.getProperties().getCreatedTime();
+                return (isSameDay(fileTimeStamp, new Date())) ? STALE : NEW;
+            }
+            return NOT_EXISTS;
         } catch (Exception exp) {
             log.error("{}:: Failed to get file timestamp :: ", logComponentName, exp);
+            throw exp;
         }
-        return isNull(fileTimeStamp) ? true : negate(isSameDay(fileTimeStamp, new Date()));
     }
 }
