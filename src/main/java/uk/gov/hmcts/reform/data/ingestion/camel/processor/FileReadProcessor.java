@@ -13,6 +13,7 @@ import org.apache.commons.lang.time.DateFormatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import uk.gov.hmcts.reform.data.ingestion.camel.service.AuditServiceImpl;
 import uk.gov.hmcts.reform.data.ingestion.camel.util.BlobStatus;
@@ -50,7 +51,7 @@ public class FileReadProcessor implements Processor {
     CloudStorageAccount cloudStorageAccount;
 
     @Override
-    public void process(Exchange exchange) throws Exception {
+    public void process(Exchange exchange) {
         log.info("{}:: FileReadProcessor starts::", logComponentName);
         String blobFilePath = (String) exchange.getProperty(BLOBPATH);
         CamelContext context = exchange.getContext();
@@ -82,7 +83,7 @@ public class FileReadProcessor implements Processor {
      * @param fileName for getting timestamp of
      * @return is File TimeStamp Stale
      */
-    private BlobStatus getFileStatusInBlobContainer(String fileName) throws Exception {
+    private BlobStatus getFileStatusInBlobContainer(String fileName) {
         BlobStatus blobStatus = NEW;
         try {
             CloudBlobClient blobClient = cloudStorageAccount.createCloudBlobClient();
@@ -99,7 +100,7 @@ public class FileReadProcessor implements Processor {
             return NOT_EXISTS;
         } catch (Exception exp) {
             log.error("{}:: Failed to get file timestamp :: ", logComponentName, exp);
-            throw exp;
+            throw new RouteFailedException("Failed to get file timestamp ::");
         }
     }
 }

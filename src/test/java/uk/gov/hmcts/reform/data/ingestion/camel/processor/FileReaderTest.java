@@ -110,7 +110,7 @@ public class FileReaderTest {
     @SneakyThrows
     public void testProcessFileExceptsException() {
         when(cloudBlockBlob.exists()).thenThrow(new RouteFailedException("invalid cloud account"));
-        assertThrows(Exception.class, () -> fileReadProcessor.process(exchangeMock));
+        assertThrows(RouteFailedException.class, () -> fileReadProcessor.process(exchangeMock));
         verify(fileReadProcessor).process(exchangeMock);
     }
 }
