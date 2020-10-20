@@ -84,7 +84,6 @@ public class FileReadProcessor implements Processor {
      * @return is File TimeStamp Stale
      */
     private BlobStatus getFileStatusInBlobContainer(String fileName) {
-        BlobStatus blobStatus = NEW;
         try {
             CloudBlobClient blobClient = cloudStorageAccount.createCloudBlobClient();
             CloudBlobContainer container =
