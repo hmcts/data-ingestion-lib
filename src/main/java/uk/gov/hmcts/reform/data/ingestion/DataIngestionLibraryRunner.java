@@ -35,7 +35,6 @@ public class DataIngestionLibraryRunner {
     CamelContext camelContext;
 
     public void run(Job job, JobParameters params) throws Exception {
-
         camelContext.getGlobalOptions()
             .put(SCHEDULER_START_TIME, String.valueOf(new Date().getTime()));
 
@@ -47,5 +46,4 @@ public class DataIngestionLibraryRunner {
         jobLauncher.run(job, params);
         log.info("{}:: Data Ingestion Library job run completed::", logComponentName);
     }
-
 }
