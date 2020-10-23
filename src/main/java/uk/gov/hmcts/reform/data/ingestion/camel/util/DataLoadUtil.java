@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.FileStatus;
 
 import static java.util.Objects.nonNull;
+import static org.apache.commons.lang.StringUtils.EMPTY;
 
 @Component
 public class DataLoadUtil {
@@ -29,7 +30,7 @@ public class DataLoadUtil {
 
     public static String getFileName(CamelContext camelContext, String file) {
         return nonNull(camelContext.getRegistry().lookupByName(file))
-            ? ((FileStatus) camelContext.getRegistry().lookupByName(file)).getFileName() : null;
+            ? ((FileStatus) camelContext.getRegistry().lookupByName(file)).getFileName() : EMPTY;
 
     }
 }

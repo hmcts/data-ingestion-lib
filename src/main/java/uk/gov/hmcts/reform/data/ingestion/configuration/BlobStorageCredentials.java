@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.data.ingestion.configuration;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageCredentials;
 import com.microsoft.azure.storage.StorageCredentialsAccountAndKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -8,17 +9,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class StorageCredentials {
+public class BlobStorageCredentials {
 
     @Autowired
     AzureBlobConfig azureBlobConfig;
 
     @Autowired
     @Qualifier("credsreg")
-    com.microsoft.azure.storage.StorageCredentials storageCredentials;
+    StorageCredentials storageCredentials;
 
     @Bean(name = "credsreg")
-    public com.microsoft.azure.storage.StorageCredentials credentials() {
+    public StorageCredentials credentials() {
         return new StorageCredentialsAccountAndKey(azureBlobConfig.getAccountName(), azureBlobConfig.getAccountKey());
     }
 

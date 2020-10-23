@@ -36,7 +36,7 @@ public class ArchivalBlobServiceImpl implements IArchivalBlobService {
     public void executeArchiving() {
 
         List<String> nonStaleFiles = archivalFileNames.stream().filter(file ->
-            getFileName(camelContext, file) != null && getFileName(camelContext, file).equals(file))
+             getFileName(camelContext, file).equals(file))
             .collect(toList());
 
         archivalRoute.archivalRoute(nonStaleFiles);

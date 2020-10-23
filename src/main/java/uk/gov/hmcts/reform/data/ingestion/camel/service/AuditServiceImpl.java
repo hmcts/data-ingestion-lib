@@ -62,7 +62,7 @@ public class AuditServiceImpl implements IAuditService {
     public void auditSchedulerStatus(final CamelContext camelContext) {
 
         List<String> nonStaleFiles = archivalFileNames.stream().filter(file ->
-            getFileName(camelContext, file) != null && getFileName(camelContext, file).equals(file))
+            getFileName(camelContext, file).equals(file))
             .collect(toList());
 
         DefaultTransactionDefinition def = new DefaultTransactionDefinition();
