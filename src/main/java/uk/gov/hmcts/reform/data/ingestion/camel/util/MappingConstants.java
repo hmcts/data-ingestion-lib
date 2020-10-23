@@ -51,6 +51,8 @@ public class MappingConstants {
 
     public static final String SUCCESS = "Success";
 
+    public static final String NOT_STALE = "NotStale";
+
     public static final String ERROR_MESSAGE = "ErrorMessage";
 
     public static final String IS_FILE_STALE = "ISFILESTALE";

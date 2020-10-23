@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.data.ingestion.camel;
 
+import org.apache.camel.CamelContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -25,6 +26,9 @@ public class DataIngestionLibraryRunnerTest {
     Job jobMock;
     @Mock
     JobLauncher jobLauncherMock;
+
+    @Mock
+    CamelContext camelContext;
 
     @InjectMocks
     DataIngestionLibraryRunner dataIngestionLibraryRunner;

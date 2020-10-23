@@ -12,6 +12,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.Boolean.FALSE;
@@ -19,11 +20,13 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.Long.valueOf;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Objects.isNull;
-import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.FILE_NAME;
+import static java.util.stream.Collectors.toList;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.DataLoadUtil.getFileName;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_NAME;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_STATUS;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SUCCESS;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.TABLE_NAME;
 
 @Slf4j
 @Component
@@ -46,6 +49,10 @@ public class AuditServiceImpl implements IAuditService {
     @Value("${invalid-exception-sql}")
     String invalidExceptionSql;
 
+    @Value("${archival-file-names}")
+    List<String> archivalFileNames;
+
+
     /**
      * Updates scheduler details.
      *
@@ -54,21 +61,30 @@ public class AuditServiceImpl implements IAuditService {
      */
     public void auditSchedulerStatus(final CamelContext camelContext) {
 
+        List<String> nonStaleFiles = archivalFileNames.stream().filter(file ->
+            getFileName(camelContext, file) != null && getFileName(camelContext, file).equals(file))
+            .collect(toList());
+
         DefaultTransactionDefinition def = new DefaultTransactionDefinition();
         def.setName("Auditing scheduler details");
 
         Map<String, String> globalOptions = camelContext.getGlobalOptions();
+        String schedulerName = globalOptions.get(SCHEDULER_NAME);
 
         Timestamp schedulerStartTime = new Timestamp(valueOf((globalOptions.get(SCHEDULER_START_TIME))));
-        String schedulerName = globalOptions.get(SCHEDULER_NAME);
         String schedulerStatus = isNull(globalOptions.get(SCHEDULER_STATUS)) ? SUCCESS
             : globalOptions.get(SCHEDULER_STATUS);
 
-        jdbcTemplate.update(schedulerInsertSql, schedulerName, schedulerStartTime, new Timestamp(currentTimeMillis()),
-            schedulerStatus);
+        for (String filName : nonStaleFiles) {
+            jdbcTemplate.update(schedulerInsertSql, schedulerName, filName, schedulerStartTime,
+                new Timestamp(currentTimeMillis()),
+                schedulerStatus);
+        }
+
         TransactionStatus status = platformTransactionManager.getTransaction(def);
         platformTransactionManager.commit(status);
     }
+
 
     /**
      * Updates scheduler exceptions.
@@ -82,7 +98,7 @@ public class AuditServiceImpl implements IAuditService {
         String schedulerName = globalOptions.get(SCHEDULER_NAME);
         DefaultTransactionDefinition def = new DefaultTransactionDefinition();
 
-        Object[] params = new Object[]{camelContext.getGlobalOptions().get(FILE_NAME),
+        Object[] params = new Object[]{camelContext.getGlobalOptions().get(TABLE_NAME),
             schedulerStartTime, schedulerName, exceptionMessage, new Timestamp(currentTimeMillis())};
         //separate transaction manager required for auditing as it is independent form route
         //Transaction

@@ -11,6 +11,7 @@ import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.FIL
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_EXCEPTION_HANDLED;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ROUTE_DETAILS;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_STATUS;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.TABLE_NAME;
 
 import java.util.Map;
 
@@ -37,6 +38,9 @@ public class ExceptionProcessor implements Processor {
     @Value("${logging-component-name:data_ingestion}")
     private String logComponentName;
 
+    @Autowired
+    FileResponseProcessor fileResponseProcessor;
+
     @Override
     public void process(Exchange exchange) throws Exception {
 
@@ -49,6 +53,8 @@ public class ExceptionProcessor implements Processor {
             globalOptions.put(IS_EXCEPTION_HANDLED, TRUE.toString());
             globalOptions.put(ERROR_MESSAGE, exception.getMessage());
             globalOptions.put(FILE_NAME, routeProperties.getFileName());
+            globalOptions.put(TABLE_NAME, routeProperties.getFileName());
+            fileResponseProcessor.process(exchange);
             throw exception;
         }
     }

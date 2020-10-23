@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.ExceptionProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.FileReadProcessor;
+import uk.gov.hmcts.reform.data.ingestion.camel.processor.FileResponseProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.HeaderValidationProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
@@ -56,6 +57,9 @@ public class DataLoadRoute {
 
     @Autowired
     HeaderValidationProcessor headerValidationProcessor;
+
+    @Autowired
+    FileResponseProcessor fileResponseProcessor;
 
     @Transactional("txManager")
     public void startRoute(String startRoute, List<String> routesToExecute) throws FailedToCreateRouteException {
@@ -106,19 +110,21 @@ public class DataLoadRoute {
                                             applicationContext.getBean(route.getBinder()).getClass())
                                             .to(route.getTruncateSql())
                                             .process((Processor) applicationContext.getBean(route.getProcessor()))
-                                            .loop(loopCount)
-                                                //delete & Insert process
-                                                .split().body()
-                                                .streaming()
-                                                .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
-                                                .process(exchange -> {
-                                                    Integer index = (Integer) exchange.getProperty(Exchange.LOOP_INDEX);
-                                                    exchange.getIn().setHeader("sqlToExecute", sqls.get(index));
-                                                })
-                                            .toD("${header.sqlToExecute}")
-                                            .end() //end loop
-                                    .endChoice() //end choice
-                                .end(); //end route
+                                                .loop(loopCount)
+                                                    //delete & Insert process
+                                                    .split().body()
+                                                    .streaming()
+                                                    .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
+                                                    .process(exchange -> {
+                                                        Integer index = (Integer) exchange
+                                                            .getProperty(Exchange.LOOP_INDEX);
+                                                        exchange.getIn().setHeader("sqlToExecute", sqls.get(index));
+                                                    })
+                                                    .toD("${header.sqlToExecute}")
+                                                .end()
+                                                .process(fileResponseProcessor)
+                                                .end()
+                                        .end(); //end route
                         }
                     }
                 });

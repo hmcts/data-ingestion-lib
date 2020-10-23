@@ -31,6 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.BLOBPATH;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ROUTE_DETAILS;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
 
 public class FileReaderTest {
 
@@ -74,6 +75,7 @@ public class FileReaderTest {
         when(blobClient.getContainerReference(anyString())).thenReturn(container);
         when(container.getBlockBlobReference(any())).thenReturn(cloudBlockBlob);
         when(exchangeMock.getContext().createConsumerTemplate()).thenReturn(consumerTemplate);
+        when(camelContext.getGlobalOption(SCHEDULER_START_TIME)).thenReturn(String.valueOf(new Date().getTime()));
     }
 
     @Test
@@ -98,7 +100,7 @@ public class FileReaderTest {
     @SneakyThrows
     public void testProcessNewFile() {
         when(blobProperties.getCreatedTime()).thenReturn(new Date(
-            new Date().getTime() + 1 * 24 * 60 * 60 * 1000));
+            new Date().getTime() - 1 * 24 * 60 * 60 * 1000));
         when(cloudBlockBlob.exists()).thenReturn(true);
         doNothing().when(auditService).auditException(any(), any());
         when(consumerTemplate.receiveBody(anyString(), anyInt())).thenReturn("testbody");

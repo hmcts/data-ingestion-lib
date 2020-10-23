@@ -38,7 +38,7 @@ public class ArchiveFileProcessor implements Processor {
         exchange.getIn().setHeader("filename", "/" + fileName.concat(date));
         CamelContext context = exchange.getContext();
         ConsumerTemplate consumer = context.createConsumerTemplate();
-        exchange.getMessage().setBody(consumer.receiveBody(activeBlobs + "/" + archivalFileNames.get(count)
+        exchange.getMessage().setBody(consumer.receiveBody(activeBlobs + "/" + fileName
                 + "?" + archivalCred, fileReadTimeOut));
     }
 }

@@ -11,6 +11,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
@@ -27,7 +28,9 @@ import static uk.gov.hmcts.reform.data.ingestion.camel.util.BlobStatus.NOT_EXIST
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.BlobStatus.STALE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.BLOBPATH;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_FILE_STALE;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.NOT_STALE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ROUTE_DETAILS;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
 
 @Slf4j
 @Component
@@ -48,32 +51,35 @@ public class FileReadProcessor implements Processor {
     private Date fileTimeStamp;
 
     @Autowired
-    CloudStorageAccount cloudStorageAccount;
+    @Qualifier("credscloudStorageAccount")
+    private CloudStorageAccount cloudStorageAccount;
 
     @Override
     public void process(Exchange exchange) {
         log.info("{}:: FileReadProcessor starts::", logComponentName);
-        String blobFilePath = (String) exchange.getProperty(BLOBPATH);
-        CamelContext context = exchange.getContext();
-        ConsumerTemplate consumer = context.createConsumerTemplate();
+        final String blobFilePath = (String) exchange.getProperty(BLOBPATH);
+        final CamelContext context = exchange.getContext();
+        final ConsumerTemplate consumer = context.createConsumerTemplate();
         RouteProperties routeProperties = (RouteProperties) exchange.getIn().getHeader(ROUTE_DETAILS);
         String fileName = routeProperties.getFileName();
+        String schedulerTime = context.getGlobalOption(SCHEDULER_START_TIME);
 
         //Check Stale OR Not existing file and exit run with proper error message
-        if (getFileStatusInBlobContainer(fileName).equals(STALE)) {
+        if (getFileStatusInBlobContainer(fileName, schedulerTime).equals(STALE)) {
             exchange.getMessage().setHeader(IS_FILE_STALE, true);
             auditService.auditException(exchange.getContext(), String.format(
                 "%s file with timestamp %s not loaded due to file stale error",
                 fileName,
                 DateFormatUtils.format(fileTimeStamp, "yyyy-MM-dd HH:mm:SS")));
             return;
-        } else if (getFileStatusInBlobContainer(fileName).equals(NOT_EXISTS)) {
+        } else if (getFileStatusInBlobContainer(fileName, schedulerTime).equals(NOT_EXISTS)) {
             auditService.auditException(exchange.getContext(), String.format(
                 "%s file is not exists in container", routeProperties.getFileName()));
             return;
         }
 
         exchange.getMessage().setHeader(IS_FILE_STALE, false);
+        context.getGlobalOptions().put(fileName, NOT_STALE);
         exchange.getMessage().setBody(consumer.receiveBody(blobFilePath, fileReadTimeOut));
     }
 
@@ -83,8 +89,9 @@ public class FileReadProcessor implements Processor {
      * @param fileName for getting timestamp of
      * @return is File TimeStamp Stale
      */
-    private BlobStatus getFileStatusInBlobContainer(String fileName) {
+    private BlobStatus getFileStatusInBlobContainer(String fileName, String schedulerTime) {
         try {
+
             CloudBlobClient blobClient = cloudStorageAccount.createCloudBlobClient();
             CloudBlobContainer container =
                 blobClient.getContainerReference(azureBlobConfig.getContainerName());
@@ -94,8 +101,9 @@ public class FileReadProcessor implements Processor {
             if (cloudBlockBlob.exists()) {
                 cloudBlockBlob.downloadAttributes();
                 fileTimeStamp = cloudBlockBlob.getProperties().getCreatedTime();
-                return (isSameDay(fileTimeStamp, new Date())) ? STALE : NEW;
+                return (isSameDay(fileTimeStamp, new Date(Long.valueOf(schedulerTime)))) ? NEW : STALE;
             }
+
             return NOT_EXISTS;
         } catch (Exception exp) {
             log.error("{}:: Failed to get file timestamp :: ", logComponentName, exp);
