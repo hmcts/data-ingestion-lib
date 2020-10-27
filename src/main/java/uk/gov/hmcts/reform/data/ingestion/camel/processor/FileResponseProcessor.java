@@ -13,6 +13,13 @@ import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ROUTE_DETAILS;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_STATUS;
 
+/**
+ * This FileResponseProcessor stores
+ * File status and state in camel registry for Auditing and archiving
+ * with look up in camel registry.
+ *
+ * @since 2020-10-27
+ */
 @Component
 public class FileResponseProcessor implements Processor {
 

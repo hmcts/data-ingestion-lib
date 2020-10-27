@@ -6,6 +6,7 @@ import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,12 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.EmailFailureException;
 
+/**
+ * This EmailServiceImpl send emails to intended recipients for failure cases
+ * with detailed reason of failure.
+ *
+ * @since 2020-10-27
+ */
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Slf4j
@@ -42,6 +49,12 @@ public class EmailServiceImpl implements IEmailService {
     @Value("${ENV_NAME:''}")
     private String environmentName;
 
+    /**
+     * Triggers failure mails with reason of failure if mailing is enabled.
+     *
+     * @param messageBody String
+     * @param filename String
+     */
     public void sendEmail(String messageBody, String filename) {
 
         if (mailEnabled) {

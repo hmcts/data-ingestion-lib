@@ -1,15 +1,12 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.util;
 
+import org.apache.camel.CamelContext;
+import org.springframework.stereotype.Component;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Map;
 
-import org.apache.camel.CamelContext;
-import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.FileStatus;
-
 import static java.util.Objects.nonNull;
-import static org.apache.commons.lang.StringUtils.EMPTY;
 
 @Component
 public class DataLoadUtil {
@@ -28,9 +25,10 @@ public class DataLoadUtil {
         globalOptions.put(MappingConstants.SCHEDULER_NAME, schedulerName);
     }
 
-    public static String getFileName(CamelContext camelContext, String file) {
+    public static boolean isFileExecuted(CamelContext camelContext, String file) {
         return nonNull(camelContext.getRegistry().lookupByName(file))
-            ? ((FileStatus) camelContext.getRegistry().lookupByName(file)).getFileName() : EMPTY;
+            ? true : false;
 
     }
+
 }

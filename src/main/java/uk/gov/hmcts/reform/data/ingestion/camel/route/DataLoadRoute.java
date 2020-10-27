@@ -32,7 +32,11 @@ import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.MAPPING_METHOD;
 
 /**
- * This class is Judicial User Profile Router Triggers Orchestrated data loading.
+ * This DataLoadRoute is camel DSL route to execute and process blob files
+ * Process blob file includes
+ * validation,transformation and storing the data in database with camel datasource.
+ *
+ * @since 2020-10-27
  */
 @Component
 public class DataLoadRoute {
@@ -103,28 +107,28 @@ public class DataLoadRoute {
                                 .setHeader(MappingConstants.ROUTE_DETAILS, () -> route)
                                 .setProperty(MappingConstants.BLOBPATH, exp)
                                 .process(fileReadProcessor)
-                                    .choice()
-                                        .when(header(IS_FILE_STALE).isEqualTo(false))
-                                            .process(headerValidationProcessor)
-                                            .split(body()).unmarshal().bindy(BindyType.Csv,
-                                            applicationContext.getBean(route.getBinder()).getClass())
-                                            .to(route.getTruncateSql())
-                                            .process((Processor) applicationContext.getBean(route.getProcessor()))
-                                                .loop(loopCount)
-                                                    //delete & Insert process
-                                                    .split().body()
-                                                    .streaming()
-                                                    .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
-                                                    .process(exchange -> {
-                                                        Integer index = (Integer) exchange
-                                                            .getProperty(Exchange.LOOP_INDEX);
-                                                        exchange.getIn().setHeader("sqlToExecute", sqls.get(index));
-                                                    })
-                                                    .toD("${header.sqlToExecute}")
-                                                .end()
-                                                .process(fileResponseProcessor)
-                                                .end()
-                                        .end(); //end route
+                                .choice()
+                                .when(header(IS_FILE_STALE).isEqualTo(false))
+                                .process(headerValidationProcessor)
+                                .split(body()).unmarshal().bindy(BindyType.Csv,
+                                applicationContext.getBean(route.getBinder()).getClass())
+                                .to(route.getTruncateSql())
+                                .process((Processor) applicationContext.getBean(route.getProcessor()))
+                                .loop(loopCount)
+                                //delete & Insert process
+                                .split().body()
+                                .streaming()
+                                .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
+                                .process(exchange -> {
+                                    Integer index = (Integer) exchange
+                                        .getProperty(Exchange.LOOP_INDEX);
+                                    exchange.getIn().setHeader("sqlToExecute", sqls.get(index));
+                                })
+                                .toD("${header.sqlToExecute}")
+                                .end()
+                                .process(fileResponseProcessor)
+                                .end()
+                                .end(); //end route
                         }
                     }
                 });

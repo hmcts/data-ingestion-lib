@@ -15,6 +15,12 @@ import java.util.Date;
 import static java.lang.Boolean.TRUE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
 
+/**
+ * This DataIngestionLibraryRunner Triggers spring batch job started by consumer LRD/JRD
+ * Also it handle idempotent logic (Runs daily once and ignore second run for the day).
+ *
+ * @since 2020-10-27
+ */
 @Slf4j
 @Component
 public class DataIngestionLibraryRunner {

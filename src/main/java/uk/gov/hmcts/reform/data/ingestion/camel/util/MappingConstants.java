@@ -51,7 +51,9 @@ public class MappingConstants {
 
     public static final String SUCCESS = "Success";
 
-    public static final String NOT_STALE = "NotStale";
+    public static final String NOT_STALE_FILE = "NotStale";
+
+    public static final String PREVIOUS_DAY_FAILED = "PreviousDayFailed";
 
     public static final String ERROR_MESSAGE = "ErrorMessage";
 

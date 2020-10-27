@@ -11,6 +11,13 @@ import org.apache.camel.Processor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+/**
+ * This ArchiveFileProcessor consumes file from blob storage
+ * And set in Message body of camel context which will be use
+ * by ArchivalRoute of camel to copy blob in archive blob folder.
+ *
+ * @since 2020-10-27
+ */
 @Component
 public class ArchiveFileProcessor implements Processor {
 
@@ -29,6 +36,13 @@ public class ArchiveFileProcessor implements Processor {
     @Value("${file-read-time-out}")
     int fileReadTimeOut;
 
+
+    /**
+     * Consumes Blob file form Azure Storage endpoint
+     * And store in Message body.
+     *
+     * @param exchange Exchange
+     */
     @Override
     public void process(Exchange exchange) {
 
@@ -39,6 +53,6 @@ public class ArchiveFileProcessor implements Processor {
         CamelContext context = exchange.getContext();
         ConsumerTemplate consumer = context.createConsumerTemplate();
         exchange.getMessage().setBody(consumer.receiveBody(activeBlobs + "/" + fileName
-                + "?" + archivalCred, fileReadTimeOut));
+            + "?" + archivalCred, fileReadTimeOut));
     }
 }

@@ -21,13 +21,18 @@ import static java.lang.Long.valueOf;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
-import static uk.gov.hmcts.reform.data.ingestion.camel.util.DataLoadUtil.getFileName;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.DataLoadUtil.isFileExecuted;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_NAME;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_STATUS;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SUCCESS;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.TABLE_NAME;
 
+/**
+ * This AuditServiceImpl auditing scheduler/file details and logging exceptions.
+ *
+ * @since 2020-10-27
+ */
 @Slf4j
 @Component
 public class AuditServiceImpl implements IAuditService {
@@ -52,17 +57,19 @@ public class AuditServiceImpl implements IAuditService {
     @Value("${archival-file-names}")
     List<String> archivalFileNames;
 
+    @Value("${previous-scheduler-time}")
+    protected String getPreviousSchedulerTime;
+
 
     /**
-     * Updates scheduler details.
+     * Capture and log scheduler details with file status.
      *
      * @param camelContext CamelContext
-     * @return void
      */
     public void auditSchedulerStatus(final CamelContext camelContext) {
 
         List<String> nonStaleFiles = archivalFileNames.stream().filter(file ->
-            getFileName(camelContext, file).equals(file))
+            isFileExecuted(camelContext, file))
             .collect(toList());
 
         DefaultTransactionDefinition def = new DefaultTransactionDefinition();
@@ -87,10 +94,9 @@ public class AuditServiceImpl implements IAuditService {
 
 
     /**
-     * Updates scheduler exceptions.
+     * Capture & log scheduler exceptions.
      *
      * @param camelContext CamelContext
-     * @return void
      */
     public void auditException(final CamelContext camelContext, String exceptionMessage) {
         Map<String, String> globalOptions = camelContext.getGlobalOptions();
@@ -114,7 +120,7 @@ public class AuditServiceImpl implements IAuditService {
      * @return boolean
      */
     public boolean isAuditingCompleted() {
-        return jdbcTemplate.queryForObject(getSchedulerAuditDetails, Integer.class) > 1 ? TRUE : FALSE;
+        return jdbcTemplate.queryForObject(getSchedulerAuditDetails, Integer.class) > 0 ? TRUE : FALSE;
     }
 
 }

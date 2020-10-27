@@ -25,6 +25,14 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import uk.gov.hmcts.reform.data.ingestion.camel.service.EmailServiceImpl;
 
+/**
+ * This ExceptionProcessor gets runtime failures/exceptions
+ * while executing dataload-route or archive route
+ * And Stores it in camel context which will be use by Consumers
+ * LRD/JRD to log those exceptions.
+ *
+ * @since 2020-10-27
+ */
 @Component
 @Slf4j
 public class ExceptionProcessor implements Processor {
@@ -41,6 +49,12 @@ public class ExceptionProcessor implements Processor {
     @Autowired
     FileResponseProcessor fileResponseProcessor;
 
+    /**
+     * Capturing exceptions from routes and storing in camel context.
+     *
+     * @param exchange Exchange
+     * @throws Exception exception
+     */
     @Override
     public void process(Exchange exchange) throws Exception {
 
@@ -53,7 +67,7 @@ public class ExceptionProcessor implements Processor {
             globalOptions.put(IS_EXCEPTION_HANDLED, TRUE.toString());
             globalOptions.put(ERROR_MESSAGE, exception.getMessage());
             globalOptions.put(FILE_NAME, routeProperties.getFileName());
-            globalOptions.put(TABLE_NAME, routeProperties.getFileName());
+            globalOptions.put(TABLE_NAME, routeProperties.getTableName());
             fileResponseProcessor.process(exchange);
             throw exception;
         }

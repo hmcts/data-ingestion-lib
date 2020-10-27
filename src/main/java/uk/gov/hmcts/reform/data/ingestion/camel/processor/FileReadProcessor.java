@@ -28,10 +28,18 @@ import static uk.gov.hmcts.reform.data.ingestion.camel.util.BlobStatus.NOT_EXIST
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.BlobStatus.STALE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.BLOBPATH;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_FILE_STALE;
-import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.NOT_STALE;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.NOT_STALE_FILE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ROUTE_DETAILS;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
 
+/**
+ * This FileReadProcessor checks if file has following status
+ * Stale: old File then do nothing and log error in Audit table
+ * Not-exist in blob then do nothing and log error in Audit table
+ * New File for today's date the consumes the file and stores in Message body.
+ *
+ * @since 2020-10-27
+ */
 @Slf4j
 @Component
 public class FileReadProcessor implements Processor {
@@ -54,6 +62,11 @@ public class FileReadProcessor implements Processor {
     @Qualifier("credscloudStorageAccount")
     private CloudStorageAccount cloudStorageAccount;
 
+    /**
+     * Consumes files only if it is not Stale and stores it in message body.
+     *
+     * @param exchange Exchange
+     */
     @Override
     public void process(Exchange exchange) {
         log.info("{}:: FileReadProcessor starts::", logComponentName);
@@ -79,7 +92,7 @@ public class FileReadProcessor implements Processor {
         }
 
         exchange.getMessage().setHeader(IS_FILE_STALE, false);
-        context.getGlobalOptions().put(fileName, NOT_STALE);
+        context.getGlobalOptions().put(fileName, NOT_STALE_FILE);
         exchange.getMessage().setBody(consumer.receiveBody(blobFilePath, fileReadTimeOut));
     }
 
