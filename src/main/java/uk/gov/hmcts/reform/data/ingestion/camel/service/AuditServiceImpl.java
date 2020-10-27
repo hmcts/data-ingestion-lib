@@ -57,10 +57,6 @@ public class AuditServiceImpl implements IAuditService {
     @Value("${archival-file-names}")
     List<String> archivalFileNames;
 
-    @Value("${previous-scheduler-time}")
-    protected String getPreviousSchedulerTime;
-
-
     /**
      * Capture and log scheduler details with file status.
      *
