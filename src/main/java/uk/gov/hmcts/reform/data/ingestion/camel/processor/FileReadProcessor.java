@@ -113,7 +113,7 @@ public class FileReadProcessor implements Processor {
 
             if (cloudBlockBlob.exists()) {
                 cloudBlockBlob.downloadAttributes();
-                fileTimeStamp = cloudBlockBlob.getProperties().getCreatedTime();
+                fileTimeStamp = cloudBlockBlob.getProperties().getLastModified();
                 return (isSameDay(fileTimeStamp, new Date(Long.valueOf(schedulerTime)))) ? NEW : STALE;
             }
 
