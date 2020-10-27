@@ -70,7 +70,7 @@ public class FileReaderTest {
             .getDeclaredField("azureBlobConfig"), fileReadProcessor, azureBlobConfig);
         when(azureBlobConfig.getContainerName()).thenReturn("test");
         when(cloudBlockBlob.getProperties()).thenReturn(blobProperties);
-        when(blobProperties.getCreatedTime()).thenReturn(new Date());
+        when(blobProperties.getLastModified()).thenReturn(new Date());
         when(cloudStorageAccount.createCloudBlobClient()).thenReturn(blobClient);
         when(blobClient.getContainerReference(anyString())).thenReturn(container);
         when(container.getBlockBlobReference(any())).thenReturn(cloudBlockBlob);
@@ -99,7 +99,7 @@ public class FileReaderTest {
     @Test
     @SneakyThrows
     public void testProcessNewFile() {
-        when(blobProperties.getCreatedTime()).thenReturn(new Date(
+        when(blobProperties.getLastModified()).thenReturn(new Date(
             new Date().getTime() - 1 * 24 * 60 * 60 * 1000));
         when(cloudBlockBlob.exists()).thenReturn(true);
         doNothing().when(auditService).auditException(any(), any());
