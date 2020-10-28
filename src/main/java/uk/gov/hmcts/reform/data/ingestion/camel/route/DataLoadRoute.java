@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.ExceptionProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.FileReadProcessor;
+import uk.gov.hmcts.reform.data.ingestion.camel.processor.FileResponseProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.HeaderValidationProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
@@ -27,10 +28,15 @@ import java.util.List;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang.WordUtils.uncapitalize;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DIRECT_ROUTE;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_FILE_STALE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.MAPPING_METHOD;
 
 /**
- * This class is Judicial User Profile Router Triggers Orchestrated data loading.
+ * This DataLoadRoute is camel DSL route to execute and process blob files
+ * Process blob file includes
+ * validation,transformation and storing the data in database with camel datasource.
+ *
+ * @since 2020-10-27
  */
 @Component
 public class DataLoadRoute {
@@ -55,6 +61,9 @@ public class DataLoadRoute {
 
     @Autowired
     HeaderValidationProcessor headerValidationProcessor;
+
+    @Autowired
+    FileResponseProcessor fileResponseProcessor;
 
     @Transactional("txManager")
     public void startRoute(String startRoute, List<String> routesToExecute) throws FailedToCreateRouteException {
@@ -98,23 +107,28 @@ public class DataLoadRoute {
                                 .setHeader(MappingConstants.ROUTE_DETAILS, () -> route)
                                 .setProperty(MappingConstants.BLOBPATH, exp)
                                 .process(fileReadProcessor)
+                                .choice()
+                                .when(header(IS_FILE_STALE).isEqualTo(false))
                                 .process(headerValidationProcessor)
                                 .split(body()).unmarshal().bindy(BindyType.Csv,
                                 applicationContext.getBean(route.getBinder()).getClass())
                                 .to(route.getTruncateSql())
                                 .process((Processor) applicationContext.getBean(route.getProcessor()))
                                 .loop(loopCount)
-                                    //delete & Insert process
-                                    .split().body()
-                                    .streaming()
-                                    .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
-                                    .process(exchange -> {
-                                        Integer index = (Integer) exchange.getProperty(Exchange.LOOP_INDEX);
-                                        exchange.getIn().setHeader("sqlToExecute", sqls.get(index));
-                                    })
-                                    .toD("${header.sqlToExecute}")
-                                    .end()
-                                .end();
+                                //delete & Insert process
+                                .split().body()
+                                .streaming()
+                                .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
+                                .process(exchange -> {
+                                    Integer index = (Integer) exchange
+                                        .getProperty(Exchange.LOOP_INDEX);
+                                    exchange.getIn().setHeader("sqlToExecute", sqls.get(index));
+                                })
+                                .toD("${header.sqlToExecute}")
+                                .end()
+                                .process(fileResponseProcessor)
+                                .end()
+                                .end(); //end route
                         }
                     }
                 });

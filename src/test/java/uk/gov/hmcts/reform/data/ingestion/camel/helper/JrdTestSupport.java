@@ -1,12 +1,12 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.helper;
 
+import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
+import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
+
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-
-import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
-import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
 
 public class JrdTestSupport {
 
@@ -24,6 +24,8 @@ public class JrdTestSupport {
         routeProperties.setProcessor("processor");
         routeProperties.setRouteName("routeName");
         routeProperties.setSql("sql");
+        routeProperties.setFileName("test");
+        routeProperties.setTableName("test");
         routeProperties.setTruncateSql("truncateSql");
         return routeProperties;
     }
@@ -37,7 +39,6 @@ public class JrdTestSupport {
     public static DateTimeFormatter getDateFormatter() {
         return DateTimeFormatter.ofPattern(MappingConstants.DATE_FORMAT);
     }
-
 
     public static String getDateWithFormat(Date date, String format) {
         SimpleDateFormat formatter = new SimpleDateFormat(format);

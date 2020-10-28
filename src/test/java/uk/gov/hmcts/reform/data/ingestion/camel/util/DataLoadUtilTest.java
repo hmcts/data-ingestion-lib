@@ -26,7 +26,6 @@ public class DataLoadUtilTest extends CamelTestSupport {
         camelContext.start();
         dataLoadUtil.setGlobalConstant(camelContext, "judicial_leaf_scheduler");
         assertNotNull("judicial_leaf_scheduler",camelContext.getGlobalOption(MappingConstants.SCHEDULER_NAME));
-        assertNotNull(camelContext.getGlobalOption(MappingConstants.SCHEDULER_START_TIME));
     }
 
     @Test

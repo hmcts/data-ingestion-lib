@@ -11,6 +11,11 @@ import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.ArchiveFileProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.ExceptionProcessor;
 
+/**
+ * This ArchivalRoute is camel DSL route to copy/backup blob files in archival blob.
+ *
+ * @since 2020-10-27
+ */
 @Component
 public class ArchivalRoute {
 
@@ -37,22 +42,22 @@ public class ArchivalRoute {
         try {
 
             camelContext.addRoutes(
-                    new SpringRouteBuilder() {
-                        @Override
-                        public void configure() throws Exception {
+                new SpringRouteBuilder() {
+                    @Override
+                    public void configure() throws Exception {
 
-                            onException(Exception.class)
-                                    .handled(true)
-                                    .process(exceptionProcessor)
-                                    .end();
+                        onException(Exception.class)
+                            .handled(true)
+                            .process(exceptionProcessor)
+                            .end();
 
-                            from(archivalRoute)
-                                    .loop(archivalFiles.size()).copy()
-                                    .process(archiveFileProcessor)
-                                    .toD(archivalPath + "${header.filename}?" + archivalCred)
-                                    .end()
-                                    .end();
-                        }
+                        from(archivalRoute)
+                            .loop(archivalFiles.size()).copy()
+                            .process(archiveFileProcessor)
+                            .toD(archivalPath + "${header.filename}?" + archivalCred)
+                            .end()
+                            .end();
+                    }
                 });
         } catch (Exception ex) {
             throw new RouteFailedException(" Data Load - failed for archival ");

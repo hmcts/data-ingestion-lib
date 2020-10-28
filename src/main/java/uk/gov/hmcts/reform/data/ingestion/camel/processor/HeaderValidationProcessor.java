@@ -20,6 +20,11 @@ import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
 
+/**
+ * Validate headers in CSV file (limited Only more no headers currently).
+ *
+ * @since 2020-10-27
+ */
 @Component
 public class HeaderValidationProcessor implements Processor {
 
@@ -38,7 +43,7 @@ public class HeaderValidationProcessor implements Processor {
         CSVReader reader = new CSVReader(new StringReader(csv));
         String[] header = reader.readNext();
         Field[] allFields = applicationContext.getBean(routeProperties.getBinder())
-                .getClass().getDeclaredFields();
+            .getClass().getDeclaredFields();
         List<Field> csvFields = new ArrayList<>();
 
         for (Field field : allFields) {

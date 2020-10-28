@@ -15,6 +15,12 @@ import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
 import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
 import uk.gov.hmcts.reform.data.ingestion.camel.validator.JsrValidatorInitializer;
 
+/**
+ * This JsrValidationBaseProcessor captures JSR violations related to blob files.
+ * and log those in exception table.
+ *
+ * @since 2020-10-27
+ */
 @Slf4j
 public abstract class JsrValidationBaseProcessor<T> implements Processor {
 
@@ -32,10 +38,16 @@ public abstract class JsrValidationBaseProcessor<T> implements Processor {
         return jsrValidatorInitializer.validate(list);
     }
 
+    /**
+     * Audit JSR exceptions in file.
+     *
+     * @param jsrValidatorInitializer JsrValidatorInitializer
+     * @param exchange Exchange
+     */
     public void audit(JsrValidatorInitializer<T> jsrValidatorInitializer, Exchange exchange) {
 
         if (nonNull(jsrValidatorInitializer.getConstraintViolations())
-                && jsrValidatorInitializer.getConstraintViolations().size() > 0) {
+            && jsrValidatorInitializer.getConstraintViolations().size() > 0) {
             log.warn("{}:: Jsr exception in {} {} ", logComponentName, getClass().getSimpleName(),
                 "Please check database table");
             //Auditing JSR exceptions in exception table
@@ -45,7 +57,7 @@ public abstract class JsrValidationBaseProcessor<T> implements Processor {
 
         //jsrThresholdLimit=0 we are not failing for any threshold limit
         if (FALSE.equals(jsrThresholdLimit == 0)
-                && jsrValidatorInitializer.getConstraintViolations().size() > jsrThresholdLimit) {
+            && jsrValidatorInitializer.getConstraintViolations().size() > jsrThresholdLimit) {
             exchange.getContext().getGlobalOptions().put(SCHEDULER_STATUS, FAILURE);
             throw new RouteFailedException("Jsr exception exceeds threshold limit in "
                 + this.getClass().getSimpleName());
