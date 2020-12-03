@@ -19,8 +19,10 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Long.valueOf;
 import static java.lang.System.currentTimeMillis;
+import static java.util.Arrays.stream;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
+import static net.logstash.logback.encoder.org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.DataLoadUtil.isFileExecuted;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_NAME;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
@@ -58,13 +60,18 @@ public class AuditServiceImpl implements IAuditService {
     List<String> archivalFileNames;
 
     /**
-     * Capture and log scheduler details with file status.
+     * Updates scheduler details.
      *
      * @param camelContext CamelContext
+     * @return void
      */
-    public void auditSchedulerStatus(final CamelContext camelContext) {
+    public void auditSchedulerStatus(final CamelContext camelContext, String... auditFiles) {
 
-        List<String> nonStaleFiles = archivalFileNames.stream().filter(file ->
+        List<String> archivalFiles = isNotEmpty(auditFiles) ? archivalFileNames.stream()
+            .filter(file -> stream(auditFiles)
+            .anyMatch(s -> s.contains(file))).collect(toList()) : archivalFileNames;
+
+        List<String> nonStaleFiles = archivalFiles.stream().filter(file ->
             isFileExecuted(camelContext, file))
             .collect(toList());
 

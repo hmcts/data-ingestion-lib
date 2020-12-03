@@ -72,8 +72,10 @@ public class AuditServiceImplTest {
         when(mockJdbcTemplate.update(anyString(), anyString(), any(), any(), any())).thenReturn(1);
         when(platformTransactionManager.getTransaction(any())).thenReturn(transactionStatus);
         doNothing().when(platformTransactionManager).commit(transactionStatus);
-        dataLoadAuditUnderTest.auditSchedulerStatus(camelContext);
-        verify(dataLoadAuditUnderTest).auditSchedulerStatus(camelContext);
+        String[] files = new String[]{"test"};
+        dataLoadAuditUnderTest.auditSchedulerStatus(camelContext,files);
+
+        verify(dataLoadAuditUnderTest).auditSchedulerStatus(camelContext, files);
         verify(exchange, times(1)).getContext();
         verify(camelContext, times(1)).getGlobalOptions();
         verify(platformTransactionManager, times(1)).getTransaction(any());
