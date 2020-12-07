@@ -12,4 +12,6 @@ public class FileStatus {
     String fileName;
 
     String executionStatus;
+
+    String auditStatus;
 }

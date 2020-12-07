@@ -15,6 +15,8 @@ public class MappingConstants {
 
     public static final String DELETE_SQL = "delete-sql";
 
+    public static final String DEFERRED_SQL = "deferred-sql";
+
     public static final String TRUNCATE_SQL = "truncate-sql";
 
     public static final String BLOBPATH = "blob-path";
@@ -38,6 +40,8 @@ public class MappingConstants {
     public static final String ROUTE_DETAILS = "routedetails";
 
     public static final String DIRECT_ROUTE = "direct:";
+
+    public static final String TRUNCATE_ROUTE_PREFIX = "truncate";
 
     public static final String IS_EXCEPTION_HANDLED = "is-exception-handled";
 
@@ -63,4 +67,6 @@ public class MappingConstants {
 
     public static final String INVALID_JSR_PARENT = "Record skipped due to jsr violation in the record"
         .concat(" in the parent load");
+
+    public static final String EXECUTION_FAILED = "Execution Failed for files ";
 }

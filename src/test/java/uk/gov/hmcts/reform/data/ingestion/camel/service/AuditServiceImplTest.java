@@ -73,9 +73,8 @@ public class AuditServiceImplTest {
         when(platformTransactionManager.getTransaction(any())).thenReturn(transactionStatus);
         doNothing().when(platformTransactionManager).commit(transactionStatus);
         String[] files = new String[]{"test"};
-        dataLoadAuditUnderTest.auditSchedulerStatus(camelContext,files);
-
-        verify(dataLoadAuditUnderTest).auditSchedulerStatus(camelContext, files);
+        dataLoadAuditUnderTest.auditSchedulerStatus(camelContext);
+        verify(dataLoadAuditUnderTest).auditSchedulerStatus(camelContext);
         verify(exchange, times(1)).getContext();
         verify(camelContext, times(1)).getGlobalOptions();
         verify(platformTransactionManager, times(1)).getTransaction(any());

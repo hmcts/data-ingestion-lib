@@ -24,12 +24,15 @@ import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import javax.annotation.Resource;
+import javax.sql.DataSource;
 
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang.WordUtils.uncapitalize;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DIRECT_ROUTE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_FILE_STALE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.MAPPING_METHOD;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.TRUNCATE_ROUTE_PREFIX;
 
 /**
  * This DataLoadRoute is camel DSL route to execute and process blob files
@@ -50,7 +53,10 @@ public class DataLoadRoute {
     @Autowired
     Environment environment;
 
-    @Autowired
+    @Resource(name = "PROPAGATION_REQUIRES_NEW")
+    SpringTransactionPolicy springTransactionPolicyNew;
+
+    @Resource(name = "PROPAGATION_REQUIRED")
     SpringTransactionPolicy springTransactionPolicy;
 
     @Autowired
@@ -65,6 +71,9 @@ public class DataLoadRoute {
     @Autowired
     FileResponseProcessor fileResponseProcessor;
 
+    @Autowired
+    DataSource dataSource;
+
     @Transactional("txManager")
     public void startRoute(String startRoute, List<String> routesToExecute) throws FailedToCreateRouteException {
 
@@ -78,9 +87,9 @@ public class DataLoadRoute {
                     public void configure() throws Exception {
 
                         onException(Exception.class)
-                            .handled(true)
                             .process(exceptionProcessor)
                             .markRollbackOnly()
+                            .continued(true)
                             .end();
 
                         String[] multiCastRoute = createDirectRoutesForMulticast(routesToExecute);
@@ -88,10 +97,7 @@ public class DataLoadRoute {
                         //Started direct route with multi-cast all the configured routes with
                         //Transaction propagation required eg.application-jrd-router.yaml(rd-judicial-data-load)
                         from(startRoute)
-                            .transacted()
-                            .policy(springTransactionPolicy)
                             .multicast()
-                            .stopOnException()
                             .to(multiCastRoute).end();
 
 
@@ -102,8 +108,6 @@ public class DataLoadRoute {
                             int loopCount = getLoopCount(route, sqls);
 
                             from(DIRECT_ROUTE + route.getRouteName()).id(DIRECT_ROUTE + route.getRouteName())
-                                .transacted()
-                                .policy(springTransactionPolicy)
                                 .setHeader(MappingConstants.ROUTE_DETAILS, () -> route)
                                 .setProperty(MappingConstants.BLOBPATH, exp)
                                 .process(fileReadProcessor)
@@ -112,13 +116,14 @@ public class DataLoadRoute {
                                 .process(headerValidationProcessor)
                                 .split(body()).unmarshal().bindy(BindyType.Csv,
                                 applicationContext.getBean(route.getBinder()).getClass())
-                                .to(route.getTruncateSql())
+                                //.to(DIRECT_ROUTE + "truncatesql" + route.getRouteName()) //route.getTruncateSql()
                                 .process((Processor) applicationContext.getBean(route.getProcessor()))
                                 .loop(loopCount)
                                 //delete & Insert process
                                 .split().body()
                                 .streaming()
                                 .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
+
                                 .process(exchange -> {
                                     Integer index = (Integer) exchange
                                         .getProperty(Exchange.LOOP_INDEX);
@@ -129,6 +134,15 @@ public class DataLoadRoute {
                                 .process(fileResponseProcessor)
                                 .end()
                                 .end(); //end route
+
+                            //Truncate SQL executions carried out as a part one new transaction
+                            //And main routes called from truncate after truncate has been done
+                            from(DIRECT_ROUTE + TRUNCATE_ROUTE_PREFIX + route.getRouteName())
+                                .transacted()
+                                .policy(springTransactionPolicyNew)
+                                .to(route.getTruncateSql())
+                                .to(DIRECT_ROUTE + route.getRouteName())
+                                .end();
                         }
                     }
                 });
@@ -143,7 +157,7 @@ public class DataLoadRoute {
         int index = 0;
         String[] directRouteNameList = new String[routeList.size()];
         for (String child : routeList) {
-            directRouteNameList[index] = (DIRECT_ROUTE).concat(child);
+            directRouteNameList[index] = (DIRECT_ROUTE).concat(TRUNCATE_ROUTE_PREFIX).concat(child);
             index++;
         }
         return directRouteNameList;

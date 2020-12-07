@@ -30,4 +30,6 @@ public class RouteProperties {
     String fileName;
 
     String tableName;
+
+    String deferredSql;
 }

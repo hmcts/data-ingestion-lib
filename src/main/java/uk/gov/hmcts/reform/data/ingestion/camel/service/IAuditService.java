@@ -4,7 +4,7 @@ import org.apache.camel.CamelContext;
 
 public interface IAuditService {
 
-    void auditSchedulerStatus(final CamelContext camelContext, String... auditFiles);
+    void auditSchedulerStatus(final CamelContext camelContext);
 
     boolean isAuditingCompleted();
 
