@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.data.ingestion.configuration;
 
-import javax.sql.DataSource;
 import org.apache.camel.spring.spi.SpringTransactionPolicy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -12,6 +11,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import javax.sql.DataSource;
+
+import static java.util.Objects.nonNull;
 
 @Configuration
 @EnableTransactionManagement
@@ -25,6 +28,9 @@ public class DataSourceConfig {
 
     @Value("${spring.datasource.password}")
     String password;
+
+    @Value("${transaction.definition:PROPAGATION_REQUIRES_NEW}")
+    String transactionDefinition;
 
 
     @Bean
@@ -53,17 +59,34 @@ public class DataSourceConfig {
         return platformTransactionManager;
     }
 
-    @Bean
+
+    @Bean(name = "PROPAGATION_REQUIRES_NEW")
     public SpringTransactionPolicy getSpringTransaction() {
+        SpringTransactionPolicy springTransactionPolicy = new SpringTransactionPolicy();
+        springTransactionPolicy.setTransactionManager(txManager());
+        springTransactionPolicy.setPropagationBehaviorName(transactionDefinition);
+
+        return springTransactionPolicy;
+    }
+
+    @Bean(name = "PROPAGATION_REQUIRED")
+    public SpringTransactionPolicy getSpringTransactionRequired() {
         SpringTransactionPolicy springTransactionPolicy = new SpringTransactionPolicy();
         springTransactionPolicy.setTransactionManager(txManager());
         springTransactionPolicy.setPropagationBehaviorName("PROPAGATION_REQUIRED");
         return springTransactionPolicy;
     }
 
-    @Bean
+
+
     public DefaultTransactionDefinition defaultTransactionDefinition() {
         DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+        if (nonNull(transactionDefinition)
+            && transactionDefinition.equalsIgnoreCase("REQUIRES_NEW")) {
+            def.setPropagationBehavior(Propagation.REQUIRES_NEW.ordinal());
+        } else {
+            def.setPropagationBehavior(Propagation.REQUIRED.ordinal());
+        }
         def.setPropagationBehavior(Propagation.REQUIRED.ordinal());
         return def;
     }
