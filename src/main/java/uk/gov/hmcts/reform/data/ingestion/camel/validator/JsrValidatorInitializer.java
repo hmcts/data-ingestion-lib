@@ -1,28 +1,5 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.validator;
 
-import static java.lang.Boolean.TRUE;
-import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.INVALID_JSR_PARENT;
-import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ROUTE_DETAILS;
-import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_NAME;
-import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
-
-import java.lang.reflect.Field;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -40,6 +17,28 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
+
+import java.lang.reflect.Field;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+
+import static java.lang.Boolean.TRUE;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ROUTE_DETAILS;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_NAME;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
 
 @Component
 @Slf4j
@@ -131,24 +130,24 @@ public class JsrValidatorInitializer<T> {
         //jsrThresholdLimit=0 we keeping log of all JSR & if jsrThresholdLimit > 0 we
         // keeping log of JSR for the threshold limit and fails application after that limit
         List<ConstraintViolation<T>> violationList = constraintViolations.stream()
-                .limit(jsrThresholdLimit == 0 ? constraintViolations.size() : jsrThresholdLimit)
-                .collect(Collectors.toList());
+            .limit(jsrThresholdLimit == 0 ? constraintViolations.size() : jsrThresholdLimit)
+            .collect(Collectors.toList());
 
         jdbcTemplate.batchUpdate(
-                invalidJsrSql,
-                violationList,
-                10,
-                new ParameterizedPreparedStatementSetter<ConstraintViolation<T>>() {
-                    public void setValues(PreparedStatement ps, ConstraintViolation<T> argument) throws SQLException {
-                        ps.setString(1, routeProperties.getTableName());
-                        ps.setTimestamp(2, new Timestamp(Long.valueOf(schedulerTime)));
-                        ps.setString(3, globalOptions.get(SCHEDULER_NAME));
-                        ps.setString(4, getKeyFiled(argument.getRootBean()));
-                        ps.setString(5, argument.getPropertyPath().toString());
-                        ps.setString(6, argument.getMessage());
-                        ps.setTimestamp(7, new Timestamp(new Date().getTime()));
-                    }
-                });
+            invalidJsrSql,
+            violationList,
+            10,
+            new ParameterizedPreparedStatementSetter<ConstraintViolation<T>>() {
+                public void setValues(PreparedStatement ps, ConstraintViolation<T> argument) throws SQLException {
+                    ps.setString(1, routeProperties.getTableName());
+                    ps.setTimestamp(2, new Timestamp(Long.valueOf(schedulerTime)));
+                    ps.setString(3, globalOptions.get(SCHEDULER_NAME));
+                    ps.setString(4, getKeyFiled(argument.getRootBean()));
+                    ps.setString(5, argument.getPropertyPath().toString());
+                    ps.setString(6, argument.getMessage());
+                    ps.setTimestamp(7, new Timestamp(new Date().getTime()));
+                }
+            });
 
         TransactionStatus status = platformTransactionManager.getTransaction(def);
         platformTransactionManager.commit(status);
@@ -161,7 +160,7 @@ public class JsrValidatorInitializer<T> {
      * @param keys     List
      * @param exchange Exchange
      */
-    public void auditJsrExceptions(List<String> keys, String fieldInError, Exchange exchange) {
+    public void auditJsrExceptions(List<String> keys, String fieldInError, String errorMessage, Exchange exchange) {
 
         log.info("{}:: JsrValidatorInitializer data processing audit start for skipping parent table violation {}",
             logComponentName);
@@ -174,21 +173,21 @@ public class JsrValidatorInitializer<T> {
         String schedulerTime = globalOptions.get(SCHEDULER_START_TIME);
 
         jdbcTemplate.batchUpdate(
-                invalidJsrSql,
-                keys,
-                jdbcBatchSize,
-                new ParameterizedPreparedStatementSetter<String>() {
-                    @Override
-                    public void setValues(PreparedStatement ps, String argument) throws SQLException {
-                        ps.setString(1, routeProperties.getTableName());
-                        ps.setTimestamp(2, new Timestamp(Long.valueOf(schedulerTime)));
-                        ps.setString(3, globalOptions.get(SCHEDULER_NAME));
-                        ps.setString(4, argument);
-                        ps.setString(5, fieldInError);
-                        ps.setString(6, INVALID_JSR_PARENT);
-                        ps.setTimestamp(7, new Timestamp(new Date().getTime()));
-                    }
-                });
+            invalidJsrSql,
+            keys,
+            jdbcBatchSize,
+            new ParameterizedPreparedStatementSetter<String>() {
+                @Override
+                public void setValues(PreparedStatement ps, String argument) throws SQLException {
+                    ps.setString(1, routeProperties.getTableName());
+                    ps.setTimestamp(2, new Timestamp(Long.valueOf(schedulerTime)));
+                    ps.setString(3, globalOptions.get(SCHEDULER_NAME));
+                    ps.setString(4, argument);
+                    ps.setString(5, fieldInError);
+                    ps.setString(6, errorMessage);
+                    ps.setTimestamp(7, new Timestamp(new Date().getTime()));
+                }
+            });
 
         TransactionStatus status = platformTransactionManager.getTransaction(def);
         platformTransactionManager.commit(status);
@@ -208,7 +207,7 @@ public class JsrValidatorInitializer<T> {
             for (Field field : objectClass.getDeclaredFields()) {
 
                 DataField dataField = AnnotationUtils.findAnnotation(field,
-                        DataField.class);
+                    DataField.class);
                 if (dataField.pos() == 1) {
                     field.setAccessible(TRUE);
                     return (String) field.get(bean);
