@@ -38,7 +38,7 @@ public abstract class JsrValidationBaseProcessor<T> implements Processor {
     private List<T> invalidRecords;
 
     @Autowired
-    ApplicationContext applicationContext;
+    protected ApplicationContext applicationContext;
 
     public List<T> validate(JsrValidatorInitializer<T> jsrValidatorInitializer, List<T> list) {
         List<T> validRecords = jsrValidatorInitializer.validate(list);
