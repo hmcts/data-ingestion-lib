@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.data.ingestion.configuration.AzureBlobConfig;
 
 import java.util.Date;
 
+import static net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang.time.DateUtils.isSameDay;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.BlobStatus.NEW;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.BlobStatus.NOT_EXISTS;
@@ -80,15 +81,11 @@ public class FileReadProcessor implements Processor {
         //Check Stale OR Not existing file and exit run with proper error message
         if (getFileStatusInBlobContainer(fileName, schedulerTime).equals(STALE)) {
             exchange.getMessage().setHeader(IS_FILE_STALE, true);
-            auditService.auditException(exchange.getContext(), String.format(
-                "%s file with timestamp %s not loaded due to file stale error",
-                fileName,
-                DateFormatUtils.format(fileTimeStamp, "yyyy-MM-dd HH:mm:SS")));
-            return;
+            throw new RouteFailedException(String.format("%s file with timestamp %s not loaded due to file stale error",
+                fileName, DateFormatUtils.format(fileTimeStamp, "yyyy-MM-dd HH:mm:SS")));
         } else if (getFileStatusInBlobContainer(fileName, schedulerTime).equals(NOT_EXISTS)) {
-            auditService.auditException(exchange.getContext(), String.format(
-                "%s file is not exists in container", routeProperties.getFileName()));
-            return;
+            throw new RouteFailedException(String.format("%s file is not exists in container",
+                routeProperties.getFileName()));
         }
 
         exchange.getMessage().setHeader(IS_FILE_STALE, false);
@@ -110,6 +107,12 @@ public class FileReadProcessor implements Processor {
                 blobClient.getContainerReference(azureBlobConfig.getContainerName());
 
             CloudBlockBlob cloudBlockBlob = container.getBlockBlobReference(fileName);
+
+            //if scheduler time not set via camel context then set as current date else camel context pass current
+            // data time
+            if (isEmpty(schedulerTime)) {
+                schedulerTime = String.valueOf(new Date(System.currentTimeMillis()).getTime());
+            }
 
             if (cloudBlockBlob.exists()) {
                 cloudBlockBlob.downloadAttributes();

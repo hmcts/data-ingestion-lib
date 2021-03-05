@@ -92,7 +92,7 @@ public class FileReaderTest {
     public void testProcessNonExistFile() {
         when(cloudBlockBlob.exists()).thenReturn(false);
         doNothing().when(auditService).auditException(any(), any());
-        fileReadProcessor.process(exchangeMock);
+        assertThrows(RouteFailedException.class, () -> fileReadProcessor.process(exchangeMock));
         verify(fileReadProcessor).process(exchangeMock);
     }
 
@@ -104,7 +104,7 @@ public class FileReaderTest {
         when(cloudBlockBlob.exists()).thenReturn(true);
         doNothing().when(auditService).auditException(any(), any());
         when(consumerTemplate.receiveBody(anyString(), anyInt())).thenReturn("testbody");
-        fileReadProcessor.process(exchangeMock);
+        assertThrows(RouteFailedException.class, () -> fileReadProcessor.process(exchangeMock));
         verify(fileReadProcessor).process(exchangeMock);
     }
 
