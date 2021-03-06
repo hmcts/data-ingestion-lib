@@ -109,6 +109,7 @@ public class DataLoadRoute {
                             int loopCount = getLoopCount(route, sqls);
 
                             from(DIRECT_ROUTE + route.getRouteName()).id(DIRECT_ROUTE + route.getRouteName())
+                                .transacted().policy(springTransactionPolicy)
                                 .process(headerValidationProcessor)
                                 .split(body()).unmarshal().bindy(BindyType.Csv,
                                 applicationContext.getBean(route.getBinder()).getClass())
