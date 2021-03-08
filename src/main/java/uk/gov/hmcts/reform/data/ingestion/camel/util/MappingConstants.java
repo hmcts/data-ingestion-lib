@@ -21,13 +21,13 @@ public class MappingConstants {
 
     public static final String BLOBPATH = "blob-path";
 
-    public static final String  PROCESSOR = "processor-class";
+    public static final String PROCESSOR = "processor-class";
 
-    public static final String  CSVBINDER = "csv-binder-object";
+    public static final String CSVBINDER = "csv-binder-object";
 
-    public static final String  MAPPER = "mapper-class";
+    public static final String MAPPER = "mapper-class";
 
-    public static final String  MAPPING_METHOD = "getMap";
+    public static final String MAPPING_METHOD = "getMap";
 
     public static final String ID = "id";
 
@@ -57,14 +57,13 @@ public class MappingConstants {
 
     public static final String NOT_STALE_FILE = "NotStale";
 
-    public static final String PREVIOUS_DAY_FAILED = "PreviousDayFailed";
-
     public static final String ERROR_MESSAGE = "ErrorMessage";
 
     public static final String IS_FILE_STALE = "ISFILESTALE";
 
-    public static final String FILENOTPRESENT_ERRORMESSAGE = "File not present";
+    public static final String FILE_NOT_EXISTS = "%s file does not exist in azure storage account";
 
+    public static final String STALE_FILE_ERROR = "%s file with timestamp %s not loaded due to file stale error";
 
-    public static final String EXECUTION_FAILED = "Execution Failed for files ";
+    public static final String EXECUTION_FAILED = "%s Execution Failed for files ";
 }

@@ -87,10 +87,12 @@ public class DataLoadRoute {
                     public void configure() throws Exception {
 
                         onException(Exception.class)
+                            .handled(true)
                             .process(exceptionProcessor)
+                            .end()
                             .markRollbackOnly()
-                            .continued(true)
                             .end();
+
 
                         String[] multiCastRoute = createDirectRoutesForMulticast(routesToExecute);
 
@@ -100,7 +102,6 @@ public class DataLoadRoute {
                             .multicast()
                             .to(multiCastRoute).end();
 
-
                         for (RouteProperties route : routePropertiesList) {
 
                             Expression exp = new SimpleExpression(route.getBlobPath());
@@ -108,15 +109,10 @@ public class DataLoadRoute {
                             int loopCount = getLoopCount(route, sqls);
 
                             from(DIRECT_ROUTE + route.getRouteName()).id(DIRECT_ROUTE + route.getRouteName())
-                                .setHeader(MappingConstants.ROUTE_DETAILS, () -> route)
-                                .setProperty(MappingConstants.BLOBPATH, exp)
-                                .process(fileReadProcessor)
-                                .choice()
-                                .when(header(IS_FILE_STALE).isEqualTo(false))
+                                .transacted().policy(springTransactionPolicy)
                                 .process(headerValidationProcessor)
                                 .split(body()).unmarshal().bindy(BindyType.Csv,
                                 applicationContext.getBean(route.getBinder()).getClass())
-                                //.to(DIRECT_ROUTE + "truncatesql" + route.getRouteName()) //route.getTruncateSql()
                                 .process((Processor) applicationContext.getBean(route.getProcessor()))
                                 .loop(loopCount)
                                 //delete & Insert process
@@ -135,13 +131,20 @@ public class DataLoadRoute {
                                 .end()
                                 .end(); //end route
 
-                            //Truncate SQL executions carried out as a part one new transaction
-                            //And main routes called from truncate after truncate has been done
+                            //Route reads file, truncates and then call main file route via below line
+                            //to(DIRECT_ROUTE + route.getRouteName())
+                            //with Spring Propagation new for each file
                             from(DIRECT_ROUTE + TRUNCATE_ROUTE_PREFIX + route.getRouteName())
                                 .transacted()
                                 .policy(springTransactionPolicyNew)
+                                .setHeader(MappingConstants.ROUTE_DETAILS, () -> route)
+                                .setProperty(MappingConstants.BLOBPATH, exp)
+                                .process(fileReadProcessor)
+                                .choice()
+                                .when(header(IS_FILE_STALE).isEqualTo(false))
                                 .to(route.getTruncateSql())
                                 .to(DIRECT_ROUTE + route.getRouteName())
+                                .endChoice()
                                 .end();
                         }
                     }
