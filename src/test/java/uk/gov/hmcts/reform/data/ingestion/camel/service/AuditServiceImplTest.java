@@ -3,9 +3,9 @@ package uk.gov.hmcts.reform.data.ingestion.camel.service;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.impl.SimpleRegistry;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.support.SimpleRegistry;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -50,15 +50,15 @@ public class AuditServiceImplTest {
         return globalOptions;
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         List<String> files = new ArrayList<>();
         files.add("test");
         files.add("test1");
         setField(dataLoadAuditUnderTest, "jdbcTemplate", mockJdbcTemplate);
         setField(dataLoadAuditUnderTest, "platformTransactionManager", platformTransactionManager);
-        setField(dataLoadAuditUnderTest,"invalidExceptionSql", "select * from appointment");
-        setField(dataLoadAuditUnderTest, "archivalFileNames",files);
+        setField(dataLoadAuditUnderTest, "invalidExceptionSql", "select * from appointment");
+        setField(dataLoadAuditUnderTest, "archivalFileNames", files);
         //when(camelContext.getRegistry()).thenReturn(registry);
         MockitoAnnotations.initMocks(this);
     }
@@ -82,7 +82,7 @@ public class AuditServiceImplTest {
     }
 
     @Test
-    public void testAuditException()  {
+    public void testAuditException() {
         Map<String, String> globalOptions = getGlobalOptions(schedulerName);
         when(exchange.getContext()).thenReturn(camelContext);
         when(exchange.getContext().getGlobalOptions()).thenReturn(globalOptions);

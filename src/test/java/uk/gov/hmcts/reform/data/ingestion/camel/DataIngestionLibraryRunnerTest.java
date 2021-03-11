@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.data.ingestion.camel;
 
 import org.apache.camel.CamelContext;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.batch.core.Job;
@@ -33,7 +33,7 @@ public class DataIngestionLibraryRunnerTest {
     @InjectMocks
     DataIngestionLibraryRunner dataIngestionLibraryRunner;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initMocks(this);
     }

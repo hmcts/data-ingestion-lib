@@ -1,21 +1,21 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.processor;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.internal.util.reflection.FieldSetter;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ArchiveAzureFileProcessorTest {
 
@@ -43,7 +43,7 @@ public class ArchiveAzureFileProcessorTest {
 
         when(exchangeMock.getFromEndpoint()).thenReturn(endpointMock);
         when(endpointMock.getEndpointUri()).thenReturn("direct://leaf");
-        when(exchangeMock.getProperty("CamelLoopIndex",Integer.class)).thenReturn(0);
+        when(exchangeMock.getProperty("CamelLoopIndex", Integer.class)).thenReturn(0);
         when(exchangeMock.getIn()).thenReturn(messageMock);
         when(exchangeMock.getContext()).thenReturn(camelContextMock);
         when(camelContextMock.createConsumerTemplate()).thenReturn(consumerTemplateMock);
@@ -51,15 +51,15 @@ public class ArchiveAzureFileProcessorTest {
         when(consumerTemplateMock.receiveBody(any(String.class), any(Long.class))).thenReturn(file);
 
         FieldSetter.setField(azureFileProcessor, azureFileProcessor
-                .getClass().getDeclaredField("archivalFileNames"), archivalFileNames);
+            .getClass().getDeclaredField("archivalFileNames"), archivalFileNames);
         FieldSetter.setField(azureFileProcessor, azureFileProcessor
-                .getClass().getDeclaredField("activeBlobs"), "file:");
+            .getClass().getDeclaredField("activeBlobs"), "file:");
         FieldSetter.setField(azureFileProcessor, azureFileProcessor
-                .getClass().getDeclaredField("archivalCred"), "");
-        FieldSetter.setField(azureFileProcessor,azureFileProcessor
-                .getClass().getDeclaredField("archivalDateFormat"), "dd-MM-yyyy--HH-mm");
-        FieldSetter.setField(azureFileProcessor,azureFileProcessor
-                .getClass().getDeclaredField("fileReadTimeOut"), 1000);
+            .getClass().getDeclaredField("archivalCred"), "");
+        FieldSetter.setField(azureFileProcessor, azureFileProcessor
+            .getClass().getDeclaredField("archivalDateFormat"), "dd-MM-yyyy--HH-mm");
+        FieldSetter.setField(azureFileProcessor, azureFileProcessor
+            .getClass().getDeclaredField("fileReadTimeOut"), 1000);
 
         azureFileProcessor.process(exchangeMock);
         Assert.assertNotNull(exchangeMock);
