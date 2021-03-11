@@ -6,8 +6,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.spring.util.ReflectionUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.FileStatus;
@@ -33,9 +33,9 @@ public class FileResponseProcessorTest {
 
     ConfigurableApplicationContext applicationContext = mock(ConfigurableApplicationContext.class);
 
-    @Before
+    @BeforeEach
     @SneakyThrows
-    public void setUp()  {
+    public void setUp() {
         ReflectionUtils.setField(fileResponseProcessor.getClass()
             .getDeclaredField("applicationContext"), fileResponseProcessor, applicationContext);
         when(exchangeMock.getContext()).thenReturn(camelContext);

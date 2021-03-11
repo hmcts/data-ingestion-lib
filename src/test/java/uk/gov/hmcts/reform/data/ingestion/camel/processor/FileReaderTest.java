@@ -10,8 +10,8 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import uk.gov.hmcts.reform.data.ingestion.camel.service.AuditServiceImpl;
@@ -50,7 +50,7 @@ public class FileReaderTest {
     ConsumerTemplate consumerTemplate = mock(ConsumerTemplate.class);
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         when(exchangeMock.getIn()).thenReturn(messageMock);
         when(exchangeMock.getIn().getHeader(ROUTE_DETAILS)).thenReturn(routePropertiesMock);

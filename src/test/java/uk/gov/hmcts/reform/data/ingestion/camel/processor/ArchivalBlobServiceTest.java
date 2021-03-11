@@ -4,9 +4,9 @@ import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.impl.SimpleRegistry;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.support.SimpleRegistry;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.ArchivalRoute;
 import uk.gov.hmcts.reform.data.ingestion.camel.service.ArchivalBlobServiceImpl;
@@ -34,7 +34,7 @@ public class ArchivalBlobServiceTest {
 
     ProducerTemplate producerTemplate = mock(ProducerTemplate.class);
 
-    @Before
+    @BeforeEach
     @SneakyThrows
     public void setUp() {
 

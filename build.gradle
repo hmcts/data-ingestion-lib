@@ -485,3 +485,7 @@ jar {
 // this setting only applies when running via gradle bootRun -- see web.config for the
 // java flag that configures the deployed applications
 applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+
+test {
+    useJUnitPlatform()
+}

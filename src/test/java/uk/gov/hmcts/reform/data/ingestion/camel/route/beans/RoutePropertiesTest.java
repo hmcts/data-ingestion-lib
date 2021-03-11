@@ -1,14 +1,14 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.route.beans;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.data.ingestion.camel.helper.JrdTestSupport;
+
+import static org.junit.Assert.assertEquals;
 
 public class RoutePropertiesTest {
 
     @Test
-    public void  test_objects_RouteProperties_correctly() {
+    public void test_objects_RouteProperties_correctly() {
 
         RouteProperties routeProperties = JrdTestSupport.createRoutePropertiesMock();
 

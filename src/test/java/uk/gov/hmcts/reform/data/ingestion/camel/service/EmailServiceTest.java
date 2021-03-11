@@ -1,6 +1,20 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.service;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mail.MailException;
+import org.springframework.mail.javamail.JavaMailSender;
+import uk.gov.hmcts.reform.data.ingestion.camel.exception.EmailFailureException;
+
+import javax.mail.internet.MimeMessage;
+
 import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -9,16 +23,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
-import javax.mail.internet.MimeMessage;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.springframework.mail.MailException;
-import org.springframework.mail.javamail.JavaMailSender;
-import uk.gov.hmcts.reform.data.ingestion.camel.exception.EmailFailureException;
-
-
+@ExtendWith(MockitoExtension.class)
 public class EmailServiceTest {
 
     @InjectMocks
@@ -36,7 +41,7 @@ public class EmailServiceTest {
     private MimeMessage mimeMessage;
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         initMocks(this);
         mockData();
@@ -55,7 +60,7 @@ public class EmailServiceTest {
         setField(emailServiceImpl, "mailTo", mailTo);
         setField(emailServiceImpl, "mailsubject", mailsubject);
         setField(emailServiceImpl, "mailEnabled", Boolean.TRUE);
-        setField(emailServiceImpl, "environmentName","");
+        setField(emailServiceImpl, "environmentName", "");
     }
 
     @Test
@@ -64,20 +69,21 @@ public class EmailServiceTest {
         emailServiceImpl.sendEmail(messageBody, filename);
         assertEquals("Test", messageBody);
         assertEquals("File1.csv", filename);
-
     }
 
-    @Test(expected = EmailFailureException.class)
+    @Test
     public void testSendEmailException() {
         EmailFailureException emailFailureException = new EmailFailureException(new Throwable());
         doThrow(emailFailureException).when(mailSender).send(any(MimeMessage.class));
-        emailServiceImpl.sendEmail("Test", "File1.csv");
+        assertThrows(EmailFailureException.class, () -> emailServiceImpl
+            .sendEmail("Test", "File1.csv"));
     }
 
-    @Test(expected = EmailFailureException.class)
+    @Test
     public void testMailException() {
         MailException emailFailureException = mock(MailException.class);
         doThrow(emailFailureException).when(mailSender).send(any(MimeMessage.class));
-        emailServiceImpl.sendEmail("Test", "File1.csv");
+        assertThrows(EmailFailureException.class, () -> emailServiceImpl
+            .sendEmail("Test", "File1.csv"));
     }
 }

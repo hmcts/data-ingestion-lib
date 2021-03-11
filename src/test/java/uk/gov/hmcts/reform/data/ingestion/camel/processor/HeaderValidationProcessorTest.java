@@ -4,8 +4,8 @@ import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
@@ -31,7 +31,7 @@ public class HeaderValidationProcessorTest {
     static class BinderObject {
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         when(exchangeMock.getIn()).thenReturn(messageMock);
         when(exchangeMock.getIn().getHeader(MappingConstants.ROUTE_DETAILS)).thenReturn(routePropertiesMock);
@@ -59,7 +59,7 @@ public class HeaderValidationProcessorTest {
         when(exchangeMock.getMessage()).thenReturn(messageMock);
         when(camelContext.getGlobalOptions()).thenReturn(new HashMap<>());
         when(applicationContextMock.getBean(routePropertiesMock.getBinder())).thenReturn(binderObject);
-        assertThrows(RouteFailedException.class,() -> headerValidationProcessor.process(exchangeMock));
+        assertThrows(RouteFailedException.class, () -> headerValidationProcessor.process(exchangeMock));
         verify(headerValidationProcessor).process(exchangeMock);
     }
 }

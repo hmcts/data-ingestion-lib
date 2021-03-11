@@ -5,8 +5,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.spi.Registry;
 import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -52,7 +52,7 @@ public class ExceptionProcessorTest extends CamelTestSupport {
 
     FileResponseProcessor fileResponseProcessor = mock(FileResponseProcessor.class);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
