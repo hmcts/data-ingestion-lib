@@ -1,15 +1,15 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.route;
 
-import java.util.List;
-
 import org.apache.camel.CamelContext;
-import org.apache.camel.spring.SpringRouteBuilder;
+import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.ArchiveFileProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.ExceptionProcessor;
+
+import java.util.List;
 
 /**
  * This ArchivalRoute is camel DSL route to copy/backup blob files in archival blob.
@@ -42,7 +42,7 @@ public class ArchivalRoute {
         try {
 
             camelContext.addRoutes(
-                new SpringRouteBuilder() {
+                new RouteBuilder() {
                     @Override
                     public void configure() throws Exception {
 

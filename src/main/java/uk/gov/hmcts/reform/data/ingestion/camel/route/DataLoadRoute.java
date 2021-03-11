@@ -5,9 +5,9 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Expression;
 import org.apache.camel.FailedToCreateRouteException;
 import org.apache.camel.Processor;
+import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.BindyType;
 import org.apache.camel.model.language.SimpleExpression;
-import org.apache.camel.spring.SpringRouteBuilder;
 import org.apache.camel.spring.spi.SpringTransactionPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -82,7 +82,7 @@ public class DataLoadRoute {
 
         try {
             camelContext.addRoutes(
-                new SpringRouteBuilder() {
+                new RouteBuilder() {
                     @Override
                     public void configure() throws Exception {
 
