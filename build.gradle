@@ -74,9 +74,6 @@ def buildNumber = System.getenv("RELEASE_VERSION")?.replace("refs/tags/", "") ?:
 group = 'uk.gov.hmcts.reform'
 version = buildNumber
 
-sourceCompatibility = 11
-targetCompatibility = 11
-
 task sourcesJar(type: Jar, dependsOn: classes) {
     getArchiveClassifier().set('sources')
     from sourceSets.main.allSource
@@ -116,6 +113,7 @@ bintray {
         }
     }
 }
+
 
 compileJava {
     options.compilerArgs << '-parameters' << '-Xlint:deprecation' << "-Xlint:unchecked" << "-Werror"
@@ -438,4 +436,10 @@ applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 
 test {
     useJUnitPlatform()
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
 }
