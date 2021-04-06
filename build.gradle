@@ -95,7 +95,7 @@ publishing {
             artifact sourcesJar
 //            artifact javadocJar
             groupId project.group
-            artifactId 'sscs-common'
+            artifactId 'data-ingestion-lib'
             version project.version
         }
     }
