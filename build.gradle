@@ -5,6 +5,7 @@ buildscript {
     repositories {
         jcenter()
         mavenCentral()
+        mavenLocal()
     }
     dependencies {
         classpath("net.serenity-bdd:serenity-gradle-plugin:2.0.11")
@@ -422,6 +423,11 @@ gradle.startParameter.continueOnFailure = true
 bootJar {
     enabled = false
 }
+
+jar {
+    enabled = true
+}
+
 
 // this is required to force Java running on the Azure Windows Server OS into using
 // UTF-8 as the default character set instead of windows-1252 which causes issues.
