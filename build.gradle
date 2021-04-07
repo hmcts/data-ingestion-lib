@@ -423,11 +423,6 @@ bootJar {
     enabled = false
 }
 
-jar {
-    enabled = true
-}
-
-
 // this is required to force Java running on the Azure Windows Server OS into using
 // UTF-8 as the default character set instead of windows-1252 which causes issues.
 // this setting only applies when running via gradle bootRun -- see web.config for the
