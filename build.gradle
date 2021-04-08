@@ -91,7 +91,7 @@ publishing {
         Main(MavenPublication) {
             from components.java
             artifact sourcesJar
-//            artifact javadocJar
+            //artifact javadocJar
             groupId project.group
             artifactId 'data-ingestion-lib'
             version project.version
@@ -162,6 +162,15 @@ idea {
         testSourceDirs += project.sourceSets.functionalTest.resources.srcDirs
         testSourceDirs += project.sourceSets.smokeTest.java.srcDirs
         testSourceDirs += project.sourceSets.smokeTest.resources.srcDirs
+    }
+}
+
+// Fix for CVE-2021-21295 & need to be removed with new Azure blob version
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'io.netty') {
+            details.useVersion "4.1.63.Final"
+        }
     }
 }
 
@@ -358,14 +367,6 @@ dependencies {
     testCompile 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.3.0'
     testCompile 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
 
-    implementation('io.netty:netty-handler-proxy:4.1.59.Final') {
-        because 'In Netty before version 4.1.59.Final there is a vulnerability on Unix-like systems involving an insecure ' +
-                'temp file'
-    }
-    implementation('io.netty:netty-codec-socks:4.1.59.Final') {
-        because 'In Netty before version 4.1.59.Final there is a vulnerability on Unix-like systems involving an insecure ' +
-                'temp file'
-    }
 
     testCompile group: 'org.apache.camel', name: 'camel-test-spring', version: versions.camel
     testCompile group: 'org.apache.camel', name: 'camel-test', version: versions.camel
