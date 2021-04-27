@@ -38,7 +38,7 @@ public class DataIngestionLibraryRunner {
     private String logComponentName;
 
     @Autowired
-    CamelContext camelContext;
+    protected CamelContext camelContext;
 
     public void run(Job job, JobParameters params) throws Exception {
         camelContext.getGlobalOptions()
