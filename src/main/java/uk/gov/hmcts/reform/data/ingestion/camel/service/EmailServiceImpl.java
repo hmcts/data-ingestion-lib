@@ -1,12 +1,5 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.service;
 
-import static java.util.Objects.isNull;
-import static org.apache.commons.lang.StringUtils.EMPTY;
-import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
-
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +9,13 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.EmailFailureException;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+
+import static java.util.Objects.isNull;
+import static org.apache.commons.lang.StringUtils.EMPTY;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 
 /**
  * This EmailServiceImpl send emails to intended recipients for failure cases
@@ -43,6 +43,15 @@ public class EmailServiceImpl implements IEmailService {
     @Value("${spring.mail.enabled}")
     private boolean mailEnabled;
 
+    @Value("${spring.esb.mail.enabled}")
+    private boolean esbMailEnabled;
+
+    @Value("${spring.esb.mail.subject}")
+    private String esbMailSubject;
+
+    @Value("${spring.esb.mail.to}")
+    private String esbMailTo;
+
     @Value("${logging-component-name:data_ingestion}")
     private String logComponentName;
 
@@ -57,15 +66,19 @@ public class EmailServiceImpl implements IEmailService {
      */
     public void sendEmail(String messageBody, String filename) {
 
-        if (mailEnabled) {
+        if (mailEnabled || esbMailEnabled) {
             try {
                 //check mail flag and send mail
-                MimeMessage message = mailSender.createMimeMessage();
+                final MimeMessage message = mailSender.createMimeMessage();
                 MimeMessageHelper mimeMsgHelperObj = new MimeMessageHelper(message, true);
-                String[] split = mailTo.split(",");
-                mimeMsgHelperObj.setTo(split);
-                filename = isNull(filename) ? EMPTY : filename;
-                mimeMsgHelperObj.setSubject(environmentName.concat("::" + mailsubject.concat(filename)));
+                if (mailEnabled) {
+                    mimeMsgHelperObj.setTo(mailTo.split(","));
+                    filename = isNull(filename) ? EMPTY : filename;
+                    mimeMsgHelperObj.setSubject(environmentName.concat("::" + mailsubject.concat(filename)));
+                } else if (esbMailEnabled) {
+                    mimeMsgHelperObj.setTo(esbMailTo.split(","));
+                    mimeMsgHelperObj.setSubject(esbMailSubject);
+                }
                 mimeMsgHelperObj.setText(messageBody);
                 mimeMsgHelperObj.setFrom(mailFrom);
                 mailSender.send(mimeMsgHelperObj.getMimeMessage());
