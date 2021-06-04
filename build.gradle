@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '2.3.9.RELEASE'
+        springBootVersion = '2.4.5'
     }
     repositories {
         jcenter()
@@ -45,7 +45,7 @@ def versions = [
         reformS2sClient    : '3.1.2',
         serenity           : '2.0.23',
         sonarPitest        : '0.5',
-        springBoot         : '2.3.9.RELEASE',
+        springBoot         : '2.4.5',
         springHystrix      : '2.1.1.RELEASE',
         springfoxSwagger   : '2.9.2',
         camel              : '3.8.0',
@@ -291,6 +291,7 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: versions.springBoot
 
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-batch', version: versions.springBoot
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-bootstrap', version: '3.0.2'
 
     compile group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '2.5.6'
     compile (group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson) {
