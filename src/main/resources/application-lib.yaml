@@ -12,6 +12,8 @@ spring:
           enable: false
         ssl:
           trust: "*"
+    config:
+      import: "optional:configtree:/mnt/secrets/rd/"
 
 
 azure:
