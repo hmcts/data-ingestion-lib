@@ -40,7 +40,7 @@ public class EmailServiceImpl implements IEmailService {
     @Value("${spring.mail.subject}")
     private String mailsubject;
 
-    @Value("${spring.mail.enabled}")
+    @Value("${spring.mail.enabled:false}")
     private boolean mailEnabled;
 
     @Value("${spring.esb.mail.enabled}")
@@ -64,20 +64,20 @@ public class EmailServiceImpl implements IEmailService {
      * @param messageBody String
      * @param filename String
      */
+    //TODO: Need to refactor this code
+    @Override
     public void sendEmail(String messageBody, String filename) {
 
+        // mailEnabled and esbMailEnabled cannot be TRUE at the same time.
         if (mailEnabled || esbMailEnabled) {
             try {
                 //check mail flag and send mail
                 final MimeMessage message = mailSender.createMimeMessage();
                 MimeMessageHelper mimeMsgHelperObj = new MimeMessageHelper(message, true);
                 if (mailEnabled) {
-                    mimeMsgHelperObj.setTo(mailTo.split(","));
-                    filename = isNull(filename) ? EMPTY : filename;
-                    mimeMsgHelperObj.setSubject(environmentName.concat("::" + mailsubject.concat(filename)));
+                    configureMimeMessageOnJrdLoadFailure(filename, mimeMsgHelperObj);
                 } else if (esbMailEnabled) {
-                    mimeMsgHelperObj.setTo(esbMailTo.split(","));
-                    mimeMsgHelperObj.setSubject(esbMailSubject);
+                    configureMimeMessageOnASBFailure(mimeMsgHelperObj);
                 }
                 mimeMsgHelperObj.setText(messageBody);
                 mimeMsgHelperObj.setFrom(mailFrom);
@@ -91,4 +91,21 @@ public class EmailServiceImpl implements IEmailService {
         }
     }
 
+    private void configureMimeMessageOnASBFailure(MimeMessageHelper mimeMsgHelperObj)
+            throws MessagingException {
+        mimeMsgHelperObj.setTo(esbMailTo.split(","));
+        mimeMsgHelperObj.setSubject(esbMailSubject);
+    }
+
+    private void configureMimeMessageOnJrdLoadFailure(String filename, MimeMessageHelper mimeMsgHelperObj)
+            throws MessagingException {
+        mimeMsgHelperObj.setTo(mailTo.split(","));
+        filename = isNull(filename) ? EMPTY : filename;
+        mimeMsgHelperObj.setSubject(environmentName.concat("::" + mailsubject.concat(filename)));
+    }
+
+    @Override
+    public void setEsbMailEnabled(boolean esbMailEnabled) {
+        this.esbMailEnabled = esbMailEnabled;
+    }
 }
