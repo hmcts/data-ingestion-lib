@@ -43,7 +43,7 @@ public class EmailServiceImpl implements IEmailService {
     @Value("${spring.mail.enabled:false}")
     private boolean mailEnabled;
 
-    @Value("${spring.esb.mail.enabled}")
+    @Value("${spring.esb.mail.enabled:false}")
     private boolean esbMailEnabled;
 
     @Value("${spring.esb.mail.subject}")
