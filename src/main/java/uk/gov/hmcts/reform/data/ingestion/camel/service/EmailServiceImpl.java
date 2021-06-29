@@ -2,10 +2,12 @@ package uk.gov.hmcts.reform.data.ingestion.camel.service;
 
 import com.sendgrid.Method;
 import com.sendgrid.Request;
+import com.sendgrid.Response;
 import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
+import com.sendgrid.helpers.mail.objects.Personalization;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.EmailFailureException;
 
 import java.io.IOException;
+import java.util.List;
 
 import static java.util.Objects.isNull;
 import static org.apache.commons.lang.StringUtils.EMPTY;
@@ -33,7 +36,7 @@ public class EmailServiceImpl implements IEmailService {
     private String mailFrom;
 
     @Value("${spring.mail.to}")
-    private String mailTo;
+    private List<String> mailTo;
 
     @Value("${spring.mail.subject}")
     private String mailsubject;
@@ -48,7 +51,7 @@ public class EmailServiceImpl implements IEmailService {
     private String esbMailSubject;
 
     @Value("${spring.esb.mail.to}")
-    private String esbMailTo;
+    private List<String> esbMailTo;
 
     @Value("${logging-component-name:data_ingestion}")
     private String logComponentName;
@@ -84,17 +87,25 @@ public class EmailServiceImpl implements IEmailService {
     }
 
 
-    private void sendMail(String emailTo, String emailSubject, String messageBody) {
+    private void sendMail(List<String> emailTo, String emailSubject, String messageBody) {
         try {
-            Request request = new Request();
-            Email from = new Email(mailFrom);
-            Email to = new Email(emailTo);
+            var personalization = new Personalization();
+            emailTo.forEach(email -> {
+                personalization.addTo(new Email(email));
+            });
             Content content = new Content("text/plain", messageBody);
-            Mail mail = new Mail(from, emailSubject, to, content);
+            Mail mail = new Mail();
+            mail.setFrom(new Email(mailFrom));
+            mail.setSubject(emailSubject);
+            mail.addContent(content);
+            mail.addPersonalization(personalization);
+            var request = new Request();
             request.setMethod(Method.POST);
             request.setEndpoint("mail/send");
             request.setBody(mail.build());
-            sendGrid.api(request);
+            Response response = sendGrid.api(request);
+            log.info("{} response with status {} and body {}", logComponentName,
+                response.getStatusCode(), request.getBody());
         } catch (IOException ex) {
             log.error("{}:: Exception  while  sending mail  {}", logComponentName, ex.getMessage());
             throw new EmailFailureException(ex);
