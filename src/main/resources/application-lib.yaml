@@ -1,6 +1,5 @@
 spring:
   mail:
-    from: no-reply@reform.hmcts.net
     to: abhijit.diwan@hmcts.net,sourav.roy@hmcts.net
     subject:  ${component.name:data-ingestion} - Exception in processing -
     host: mta.reform.hmcts.net

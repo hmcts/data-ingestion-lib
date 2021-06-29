@@ -1,21 +1,22 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.service;
 
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.EmailFailureException;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
+import java.io.IOException;
 
 import static java.util.Objects.isNull;
 import static org.apache.commons.lang.StringUtils.EMPTY;
-import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 
 /**
  * This EmailServiceImpl send emails to intended recipients for failure cases
@@ -28,10 +29,7 @@ import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 @Slf4j
 public class EmailServiceImpl implements IEmailService {
 
-    @Autowired
-    JavaMailSender mailSender;
-
-    @Value("${spring.mail.from}")
+    @Value("${sendgrid.mail.from}")
     private String mailFrom;
 
     @Value("${spring.mail.to}")
@@ -58,11 +56,14 @@ public class EmailServiceImpl implements IEmailService {
     @Value("${ENV_NAME:''}")
     private String environmentName;
 
+    @Autowired
+    private SendGrid sendGrid;
+
     /**
      * Triggers failure mails with reason of failure if mailing is enabled.
      *
      * @param messageBody String
-     * @param filename String
+     * @param filename    String
      */
     //TODO: Need to refactor this code
     @Override
@@ -70,38 +71,34 @@ public class EmailServiceImpl implements IEmailService {
 
         // mailEnabled and esbMailEnabled cannot be TRUE at the same time.
         if (mailEnabled || esbMailEnabled) {
-            try {
-                //check mail flag and send mail
-                final MimeMessage message = mailSender.createMimeMessage();
-                MimeMessageHelper mimeMsgHelperObj = new MimeMessageHelper(message, true);
-                if (mailEnabled) {
-                    configureMimeMessageOnJrdLoadFailure(filename, mimeMsgHelperObj);
-                } else if (esbMailEnabled) {
-                    configureMimeMessageOnASBFailure(mimeMsgHelperObj);
-                }
-                mimeMsgHelperObj.setText(messageBody);
-                mimeMsgHelperObj.setFrom(mailFrom);
-                mailSender.send(mimeMsgHelperObj.getMimeMessage());
-            } catch (MailException | MessagingException e) {
-                log.error("{}:: Exception  while  sending mail  {}", logComponentName, getStackTrace(e));
-                throw new EmailFailureException(e);
+            if (mailEnabled) {
+                filename = isNull(filename) ? EMPTY : filename;
+                mailsubject = environmentName.concat("::" + mailsubject.concat(filename));
+                sendMail(mailTo, mailsubject, messageBody);
+            } else if (esbMailEnabled) {
+                sendMail(esbMailTo, esbMailSubject, messageBody);
             }
         } else {
             log.info("{}:: Exception in data ingestion, but emails alerts has been disabled", logComponentName);
         }
     }
 
-    private void configureMimeMessageOnASBFailure(MimeMessageHelper mimeMsgHelperObj)
-            throws MessagingException {
-        mimeMsgHelperObj.setTo(esbMailTo.split(","));
-        mimeMsgHelperObj.setSubject(esbMailSubject);
-    }
 
-    private void configureMimeMessageOnJrdLoadFailure(String filename, MimeMessageHelper mimeMsgHelperObj)
-            throws MessagingException {
-        mimeMsgHelperObj.setTo(mailTo.split(","));
-        filename = isNull(filename) ? EMPTY : filename;
-        mimeMsgHelperObj.setSubject(environmentName.concat("::" + mailsubject.concat(filename)));
+    private void sendMail(String emailTo, String emailSubject, String messageBody) {
+        try {
+            Request request = new Request();
+            Email from = new Email(mailFrom);
+            Email to = new Email(emailTo);
+            Content content = new Content("text/plain", messageBody);
+            Mail mail = new Mail(from, emailSubject, to, content);
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            sendGrid.api(request);
+        } catch (IOException ex) {
+            log.error("{}:: Exception  while  sending mail  {}", logComponentName, ex.getMessage());
+            throw new EmailFailureException(ex);
+        }
     }
 
     @Override
