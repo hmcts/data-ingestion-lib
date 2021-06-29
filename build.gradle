@@ -336,6 +336,7 @@ dependencies {
 
     compile group: 'com.opencsv', name: 'opencsv', version: '3.7'
     compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
+    implementation 'com.sendgrid:sendgrid-java:4.7.2'
 
     compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
