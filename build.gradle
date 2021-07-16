@@ -3,9 +3,9 @@ buildscript {
         springBootVersion = '2.3.9.RELEASE'
     }
     repositories {
+        mavenLocal()
         jcenter()
         mavenCentral()
-        mavenLocal()
     }
     dependencies {
         classpath("net.serenity-bdd:serenity-gradle-plugin:2.0.11")
@@ -274,6 +274,7 @@ project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport
 project.tasks['sonarqube'].group = "Verification"
 
 repositories {
+    mavenLocal()
 
     maven {
         url "https://dl.bintray.com/hmcts/hmcts-maven"

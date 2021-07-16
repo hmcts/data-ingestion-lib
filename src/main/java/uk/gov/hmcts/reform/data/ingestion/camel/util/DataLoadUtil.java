@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.FileStatus;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Map;
+import java.util.function.BiPredicate;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -48,5 +49,28 @@ public class DataLoadUtil {
         if (isNull(camelContext.getRegistry().lookupByName(fileName))) {
             beanFactory.registerSingleton(fileName, fileStatus);
         }
+    }
+
+    public static boolean isStringArraysEqual(String[] expected, String[] actual) {
+        BiPredicate<String[], String[]> nullCheck = (exp,act) -> (expected != null && actual != null);
+        BiPredicate<String[], String[]> sizeCheck = (exp,act) -> (act.length == exp.length);
+        BiPredicate<String, String> headerEqualsIgnoreCase = String::equalsIgnoreCase;
+        BiPredicate<String[], String[]> arrayEqualsIgnoreCaseCheck = (exp,act) -> {
+            boolean isEqual = Boolean.TRUE;
+            for (int i = 0; i < expected.length; i++) {
+                isEqual = headerEqualsIgnoreCase.test(expected[i], actual[i]);
+                if (!isEqual) {
+                    break;
+                }
+            }
+            return isEqual;
+        };
+
+        boolean isChecksPass = nullCheck.and(sizeCheck).test(expected, actual);
+        if (!isChecksPass) {
+            return false;
+        }
+
+        return arrayEqualsIgnoreCaseCheck.test(expected, actual);
     }
 }

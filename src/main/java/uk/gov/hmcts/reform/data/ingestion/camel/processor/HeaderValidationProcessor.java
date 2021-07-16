@@ -1,15 +1,6 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.processor;
 
 import com.opencsv.CSVReader;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.lang.reflect.Field;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -19,6 +10,18 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.lang.reflect.Field;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.DataLoadUtil.isStringArraysEqual;
 
 /**
  * Validate headers in CSV file (limited Only more no headers currently).
@@ -41,7 +44,15 @@ public class HeaderValidationProcessor implements Processor {
         RouteProperties routeProperties = (RouteProperties) exchange.getIn().getHeader(MappingConstants.ROUTE_DETAILS);
         String csv = exchange.getIn().getBody(String.class);
         CSVReader reader = new CSVReader(new StringReader(csv));
-        String[] header = reader.readNext();
+        String[] actualCsvHeaders = reader.readNext();
+        String expectedCsvHeaders = routeProperties.getCsvHeadersExpected();
+        if (isNotBlank(expectedCsvHeaders)) {
+            String[] expectedHeaders = expectedCsvHeaders.split(MappingConstants.COMA);
+            if (!isStringArraysEqual(expectedHeaders, actualCsvHeaders)) {
+                throwRouteFailedException(exchange, routeProperties);
+            }
+        }
+
         Field[] allFields = applicationContext.getBean(routeProperties.getBinder())
             .getClass().getDeclaredFields();
         List<Field> csvFields = new ArrayList<>();
@@ -53,14 +64,19 @@ public class HeaderValidationProcessor implements Processor {
         }
 
         //Auditing in database if headers are missing
-        if (header.length > csvFields.size()) {
-            exchange.getIn().setHeader(MappingConstants.HEADER_EXCEPTION, MappingConstants.HEADER_EXCEPTION);
-            camelContext.getGlobalOptions().put(MappingConstants.FILE_NAME, routeProperties.getFileName());
-            throw new RouteFailedException("Mismatch headers in csv for ::" + routeProperties.getFileName());
+        if (isBlank(expectedCsvHeaders) && actualCsvHeaders.length > csvFields.size()) {
+            throwRouteFailedException(exchange, routeProperties);
         }
 
         InputStream inputStream = new ByteArrayInputStream(csv.getBytes(Charset.forName("UTF-8")));
 
         exchange.getMessage().setBody(inputStream);
+    }
+
+    private void throwRouteFailedException(Exchange exchange, RouteProperties routeProperties) {
+        exchange.getIn().setHeader(MappingConstants.HEADER_EXCEPTION, MappingConstants.HEADER_EXCEPTION);
+        camelContext.getGlobalOptions().put(MappingConstants.FILE_NAME, routeProperties.getFileName());
+        throw new RouteFailedException("There is a mismatch in the headers of the csv file :: "
+                + routeProperties.getFileName());
     }
 }

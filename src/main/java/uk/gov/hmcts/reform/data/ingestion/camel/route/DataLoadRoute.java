@@ -197,6 +197,8 @@ public class DataLoadRoute {
                 MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.FILE_NAME));
             properties.setTableName(environment.getProperty(
                 MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.TABLE_NAME));
+            properties.setCsvHeadersExpected(environment.getProperty(
+                MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.CSV_HEADERS_EXPECTED));
             routePropertiesList.add(index, properties);
             properties.setDeleteSql(environment.getProperty(MappingConstants.ROUTE + "."
                 + routeName + "." + MappingConstants.DELETE_SQL));

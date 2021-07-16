@@ -32,4 +32,6 @@ public class RouteProperties {
     String tableName;
 
     String deferredSql;
+
+    String csvHeadersExpected;
 }
