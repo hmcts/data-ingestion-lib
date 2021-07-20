@@ -18,6 +18,7 @@ import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
@@ -45,8 +46,14 @@ public class HeaderValidationProcessor implements Processor {
         String csv = exchange.getIn().getBody(String.class);
         CSVReader reader = new CSVReader(new StringReader(csv));
         String[] actualCsvHeaders = reader.readNext();
+        String isHeaderValidationEnabled = routeProperties.getIsHeaderValidationEnabled();
         String expectedCsvHeaders = routeProperties.getCsvHeadersExpected();
-        if (isNotBlank(expectedCsvHeaders)) {
+
+        Predicate<String> checkIfHeaderValidationEnabled = (isEnabled) -> isEnabled != null
+                && isEnabled.equalsIgnoreCase(Boolean.TRUE.toString());
+        boolean isEnabled = checkIfHeaderValidationEnabled.test(isHeaderValidationEnabled);
+
+        if (isEnabled && isNotBlank(expectedCsvHeaders)) {
             String[] expectedHeaders = expectedCsvHeaders.split(MappingConstants.COMA);
             if (!isStringArraysEqual(expectedHeaders, actualCsvHeaders)) {
                 throwRouteFailedException(exchange, routeProperties);
@@ -64,7 +71,7 @@ public class HeaderValidationProcessor implements Processor {
         }
 
         //Auditing in database if headers are missing
-        if (isBlank(expectedCsvHeaders) && actualCsvHeaders.length > csvFields.size()) {
+        if ((isBlank(expectedCsvHeaders) || !isEnabled) && actualCsvHeaders.length > csvFields.size()) {
             throwRouteFailedException(exchange, routeProperties);
         }
 

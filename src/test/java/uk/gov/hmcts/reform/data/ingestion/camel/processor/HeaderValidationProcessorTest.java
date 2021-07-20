@@ -54,10 +54,11 @@ public class HeaderValidationProcessorTest {
     @SneakyThrows
     @Test
     public void testProcessException() {
-        BinderObject binderObject = new BinderObject();
+
         when(exchangeMock.getIn().getBody(String.class)).thenReturn("filed1,field2");
         when(exchangeMock.getMessage()).thenReturn(messageMock);
         when(camelContext.getGlobalOptions()).thenReturn(new HashMap<>());
+        BinderObject binderObject = new BinderObject();
         when(applicationContextMock.getBean(routePropertiesMock.getBinder())).thenReturn(binderObject);
         assertThrows(RouteFailedException.class, () -> headerValidationProcessor.process(exchangeMock));
         verify(headerValidationProcessor).process(exchangeMock);

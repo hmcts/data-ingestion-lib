@@ -37,13 +37,6 @@ public class ImprovedHeaderValidationProcessorTest {
     @BeforeEach
     public void setUp() throws Exception {
         when(exchangeMock.getIn()).thenReturn(messageMock);
-        ImprovedHeaderValidationProcessorTest.BinderObject binderObject =
-                new ImprovedHeaderValidationProcessorTest.BinderObject();
-        RouteProperties routeProperties = new RouteProperties();
-        routeProperties.setBinder("binderObject");
-        routeProperties.setCsvHeadersExpected("field1,field2");
-        when(exchangeMock.getIn().getHeader(MappingConstants.ROUTE_DETAILS)).thenReturn(routeProperties);
-        when(applicationContextMock.getBean(routeProperties.getBinder())).thenReturn(binderObject);
         setField(headerValidationProcessor.getClass()
                 .getDeclaredField("applicationContext"), headerValidationProcessor, applicationContextMock);
         setField(headerValidationProcessor.getClass()
@@ -53,6 +46,7 @@ public class ImprovedHeaderValidationProcessorTest {
     @SneakyThrows
     @Test
     public void testProcess() {
+        setRouteProperties("true");
         when(exchangeMock.getIn().getBody(String.class)).thenReturn("field1,field2");
         when(exchangeMock.getMessage()).thenReturn(messageMock);
         headerValidationProcessor.process(exchangeMock);
@@ -62,6 +56,7 @@ public class ImprovedHeaderValidationProcessorTest {
     @SneakyThrows
     @Test
     public void testProcess_CaseSensitivityCheck() {
+        setRouteProperties("true");
         when(exchangeMock.getIn().getBody(String.class)).thenReturn("Field1,FIELD2");
         when(exchangeMock.getMessage()).thenReturn(messageMock);
         headerValidationProcessor.process(exchangeMock);
@@ -71,7 +66,19 @@ public class ImprovedHeaderValidationProcessorTest {
 
     @SneakyThrows
     @Test
-    public void testProcessException() {
+    public void testProcessException_WhenHeaderValidationToggledOn() {
+        setRouteProperties("true");
+        when(exchangeMock.getIn().getBody(String.class)).thenReturn("field1,field2,field3");
+        when(exchangeMock.getMessage()).thenReturn(messageMock);
+        when(camelContext.getGlobalOptions()).thenReturn(new HashMap<>());
+        assertThrows(RouteFailedException.class, () -> headerValidationProcessor.process(exchangeMock));
+        verify(headerValidationProcessor).process(exchangeMock);
+    }
+
+    @SneakyThrows
+    @Test
+    public void testProcessException_WhenHeaderValidationToggledOff() {
+        setRouteProperties("false");
         when(exchangeMock.getIn().getBody(String.class)).thenReturn("field1,field2,field3");
         when(exchangeMock.getMessage()).thenReturn(messageMock);
         when(camelContext.getGlobalOptions()).thenReturn(new HashMap<>());
@@ -82,11 +89,35 @@ public class ImprovedHeaderValidationProcessorTest {
     @SneakyThrows
     @Test
     public void testProcessException_JumbledOrder() {
+        setRouteProperties("true");
         when(exchangeMock.getIn().getBody(String.class)).thenReturn("field2,field1");
         when(exchangeMock.getMessage()).thenReturn(messageMock);
         when(camelContext.getGlobalOptions()).thenReturn(new HashMap<>());
         assertThrows(RouteFailedException.class, () -> headerValidationProcessor.process(exchangeMock));
         verify(headerValidationProcessor).process(exchangeMock);
+    }
+
+    @SneakyThrows
+    @Test
+    public void testProcess_NoException_HeadersJumbledOrder_WhenHeaderValidationToggledOff() {
+        setRouteProperties("false");
+        when(exchangeMock.getIn().getBody(String.class)).thenReturn("field2,field1");
+        when(exchangeMock.getMessage()).thenReturn(messageMock);
+        when(camelContext.getGlobalOptions()).thenReturn(new HashMap<>());
+        headerValidationProcessor.process(exchangeMock);
+        verify(headerValidationProcessor).process(exchangeMock);
+    }
+
+    private void setRouteProperties(String isHeaderValidationEnabled) {
+        RouteProperties routeProperties = new RouteProperties();
+        routeProperties.setBinder("binderObject");
+        routeProperties.setCsvHeadersExpected("field1,field2");
+        routeProperties.setIsHeaderValidationEnabled(isHeaderValidationEnabled);
+        when(exchangeMock.getIn().getHeader(MappingConstants.ROUTE_DETAILS)).thenReturn(routeProperties);
+
+        ImprovedHeaderValidationProcessorTest.BinderObject binderObject =
+                new ImprovedHeaderValidationProcessorTest.BinderObject();
+        when(applicationContextMock.getBean(routeProperties.getBinder())).thenReturn(binderObject);
     }
 
 }

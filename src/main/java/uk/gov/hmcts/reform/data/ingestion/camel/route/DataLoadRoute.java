@@ -29,6 +29,7 @@ import javax.sql.DataSource;
 
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang.WordUtils.uncapitalize;
+import static org.apache.logging.log4j.util.Strings.isBlank;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DIRECT_ROUTE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_FILE_STALE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.MAPPING_METHOD;
@@ -199,6 +200,12 @@ public class DataLoadRoute {
                 MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.TABLE_NAME));
             properties.setCsvHeadersExpected(environment.getProperty(
                 MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.CSV_HEADERS_EXPECTED));
+            String isHeaderValidationEnabled = environment.getProperty(
+                    MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.IS_HEADER_VALIDATION_ENABLED);
+            if (isBlank(isHeaderValidationEnabled)) {
+                isHeaderValidationEnabled = Boolean.FALSE.toString();
+            }
+            properties.setIsHeaderValidationEnabled(isHeaderValidationEnabled);
             routePropertiesList.add(index, properties);
             properties.setDeleteSql(environment.getProperty(MappingConstants.ROUTE + "."
                 + routeName + "." + MappingConstants.DELETE_SQL));

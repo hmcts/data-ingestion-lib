@@ -69,5 +69,7 @@ public class MappingConstants {
 
     public static final String CSV_HEADERS_EXPECTED = "csv-headers-expected";
 
+    public static final String IS_HEADER_VALIDATION_ENABLED = "header-validation-enabled";
+
     public static final String COMA = ",";
 }
