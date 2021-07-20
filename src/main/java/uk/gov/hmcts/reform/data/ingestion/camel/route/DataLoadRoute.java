@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 
@@ -181,6 +182,8 @@ public class DataLoadRoute {
                 MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.ID));
             properties.setSql(environment.getProperty(
                 MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.INSERT_SQL));
+            properties.setUpdateSql(Optional.ofNullable(environment.getProperty(
+                    MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.UPDATE_SQL)));
             properties.setTruncateSql(environment.getProperty(
                 MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.TRUNCATE_SQL)
                 == null ? "log:test" : environment.getProperty(
@@ -209,6 +212,7 @@ public class DataLoadRoute {
         if ((nonNull(route.getDeleteSql()))) {
             sqls.add(route.getDeleteSql());
         }
+        route.getUpdateSql().ifPresent(sqls::add);
         sqls.add(route.getSql());
         return sqls.size();
     }

@@ -13,6 +13,8 @@ public class MappingConstants {
 
     public static final String INSERT_SQL = "insert-sql";
 
+    public static final String UPDATE_SQL = "update-sql";
+
     public static final String DELETE_SQL = "delete-sql";
 
     public static final String DEFERRED_SQL = "deferred-sql";

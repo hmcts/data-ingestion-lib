@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Optional;
+
 @Setter
 @Getter
 @NoArgsConstructor
@@ -14,6 +16,8 @@ public class RouteProperties {
     String childNames;
 
     String sql;
+
+    Optional<String> updateSql;
 
     String deleteSql;
 
