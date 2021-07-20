@@ -14,6 +14,7 @@ import java.util.function.BiPredicate;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 
 @Component
 public class DataLoadUtil {
@@ -52,15 +53,11 @@ public class DataLoadUtil {
     }
 
     public static boolean isStringArraysEqual(String[] expected, String[] actual) {
-        BiPredicate<String[], String[]> nullCheck = (exp,act) -> (expected != null && actual != null);
+        BiPredicate<String[], String[]> nullCheck = (exp,act) -> (isNotEmpty(exp) && isNotEmpty(act));
         BiPredicate<String[], String[]> sizeCheck = (exp,act) -> (act.length == exp.length);
         BiPredicate<String[], String[]> arrayEqualsIgnoreCaseCheck = DataLoadUtil::isArraysEqual;
 
-        boolean isChecksPass = nullCheck.and(sizeCheck).test(expected, actual);
-        if (!isChecksPass) {
-            return false;
-        }
-        return arrayEqualsIgnoreCaseCheck.test(expected, actual);
+        return nullCheck.and(sizeCheck).and(arrayEqualsIgnoreCaseCheck).test(expected, actual);
     }
 
     private static boolean isArraysEqual(String[] expected, String[] actual) {

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
+import static org.apache.commons.lang.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.DataLoadUtil.isStringArraysEqual;
@@ -55,7 +56,7 @@ public class HeaderValidationProcessor implements Processor {
 
         if (isEnabled && isNotBlank(expectedCsvHeaders)) {
             String[] expectedHeaders = expectedCsvHeaders.split(MappingConstants.COMA);
-            if (!isStringArraysEqual(expectedHeaders, actualCsvHeaders)) {
+            if (isNotTrue(isStringArraysEqual(expectedHeaders, actualCsvHeaders))) {
                 throwRouteFailedException(exchange, routeProperties);
             }
         }
