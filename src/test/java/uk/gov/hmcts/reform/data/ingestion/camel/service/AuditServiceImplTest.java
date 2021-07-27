@@ -60,7 +60,7 @@ public class AuditServiceImplTest {
         setField(dataLoadAuditUnderTest, "invalidExceptionSql", "select * from appointment");
         setField(dataLoadAuditUnderTest, "archivalFileNames", files);
         //when(camelContext.getRegistry()).thenReturn(registry);
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
