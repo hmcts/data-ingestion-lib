@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.javamail.JavaMailSender;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.EmailFailureException;
@@ -23,7 +24,6 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,7 +48,7 @@ public class EmailServiceTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        initMocks(this);
+        MockitoAnnotations.openMocks(this);
         response.setBody("empty");
         response.setStatusCode(200);
         mockData();

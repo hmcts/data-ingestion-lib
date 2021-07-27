@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.data.ingestion.camel.service.AuditServiceImpl;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 public class DataIngestionLibraryRunnerTest {
@@ -35,7 +35,7 @@ public class DataIngestionLibraryRunnerTest {
 
     @BeforeEach
     public void setUp() {
-        initMocks(this);
+        openMocks(this);
     }
 
     @Test

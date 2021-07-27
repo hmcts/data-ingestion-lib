@@ -48,7 +48,7 @@ public class ArchivalBlobServiceTest {
         setField(archivalBlobService, "producerTemplate", producerTemplate);
         doNothing().when(archivalRoute).archivalRoute(anyList());
         doNothing().when(producerTemplate).sendBody(any());
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test

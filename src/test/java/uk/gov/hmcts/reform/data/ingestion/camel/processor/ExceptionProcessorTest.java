@@ -54,7 +54,7 @@ public class ExceptionProcessorTest extends CamelTestSupport {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test

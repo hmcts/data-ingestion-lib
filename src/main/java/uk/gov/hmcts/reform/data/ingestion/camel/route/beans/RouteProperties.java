@@ -36,4 +36,8 @@ public class RouteProperties {
     String csvHeadersExpected;
 
     String isHeaderValidationEnabled;
+
+    String parentFileName;
+
+    boolean parentFailureEnabled;
 }
