@@ -68,4 +68,17 @@ public class MappingConstants {
     public static final String STALE_FILE_ERROR = "%s file with timestamp %s not loaded due to file stale error";
 
     public static final String EXECUTION_FAILED = "%s Execution Failed for files ";
+
+    public static final String CSV_HEADERS_EXPECTED = "csv-headers-expected";
+
+    public static final String IS_HEADER_VALIDATION_ENABLED = "header-validation-enabled";
+
+    public static final String COMA = ",";
+
+    public static final String PARENT_FAILURE_ENABLED = "parent-failure-enabled";
+
+    public static final String IS_PARENT_FAILED = "ISPARENTFAILED";
+
+    //parent-name
+    public static final String PARENT_NAME = "parent-name";
 }

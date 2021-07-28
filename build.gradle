@@ -3,14 +3,13 @@ buildscript {
         springBootVersion = '2.3.9.RELEASE'
     }
     repositories {
+        mavenLocal()
         jcenter()
         mavenCentral()
-        mavenLocal()
     }
     dependencies {
         classpath("net.serenity-bdd:serenity-gradle-plugin:2.0.11")
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
     }
 }
 
@@ -35,7 +34,6 @@ apply plugin: 'net.serenity-bdd.aggregator'
 apply plugin: 'project-report'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
-apply plugin: "com.jfrog.bintray"
 
 def versions = [
         lombok             : '1.18.6',
@@ -95,22 +93,6 @@ publishing {
             groupId project.group
             artifactId 'data-ingestion-lib'
             version project.version
-        }
-    }
-}
-bintray {
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_KEY')
-    publications = ['Main']
-    publish = true
-    pkg {
-        repo = 'hmcts-maven'
-        name = 'data-ingestion-lib'
-        userOrg = 'hmcts'
-        licenses = ['MIT']
-        vcsUrl = gitRepo
-        version {
-            name = project.version
         }
     }
 }
@@ -274,9 +256,10 @@ project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport
 project.tasks['sonarqube'].group = "Verification"
 
 repositories {
+    mavenLocal()
 
     maven {
-        url "https://dl.bintray.com/hmcts/hmcts-maven"
+        url "https://jitpack.io/"
     }
 
     jcenter()
@@ -358,8 +341,8 @@ dependencies {
     }
 
     testCompile group: 'com.h2database', name: 'h2'
-    testCompile group: 'org.mockito', name: 'mockito-core', version: '3.2.4'
-    testCompile group: 'org.mockito', name: 'mockito-inline', version: '3.1.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '3.4.6'
+    testCompile group: 'org.mockito', name: 'mockito-inline', version: '3.4.6'
     testCompile group: 'org.powermock', name: 'powermock-api-mockito2', version: '2.0.9'
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot
     testCompile group: 'org.springframework.batch', name: 'spring-batch-test', version: '4.2.4.RELEASE'

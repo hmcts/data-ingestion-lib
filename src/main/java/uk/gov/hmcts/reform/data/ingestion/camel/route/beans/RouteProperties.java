@@ -36,4 +36,12 @@ public class RouteProperties {
     String tableName;
 
     String deferredSql;
+
+    String csvHeadersExpected;
+
+    String isHeaderValidationEnabled;
+
+    String parentFileName;
+
+    boolean parentFailureEnabled;
 }

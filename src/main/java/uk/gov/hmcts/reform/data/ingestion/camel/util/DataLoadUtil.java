@@ -10,9 +10,11 @@ import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.FileStatus;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Map;
+import java.util.function.BiPredicate;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 
 @Component
 public class DataLoadUtil {
@@ -48,5 +50,25 @@ public class DataLoadUtil {
         if (isNull(camelContext.getRegistry().lookupByName(fileName))) {
             beanFactory.registerSingleton(fileName, fileStatus);
         }
+    }
+
+    public static boolean isStringArraysEqual(String[] expected, String[] actual) {
+        BiPredicate<String[], String[]> nullCheck = (exp,act) -> (isNotEmpty(exp) && isNotEmpty(act));
+        BiPredicate<String[], String[]> sizeCheck = (exp,act) -> (act.length == exp.length);
+        BiPredicate<String[], String[]> arrayEqualsIgnoreCaseCheck = DataLoadUtil::isArraysEqual;
+
+        return nullCheck.and(sizeCheck).and(arrayEqualsIgnoreCaseCheck).test(expected, actual);
+    }
+
+    private static boolean isArraysEqual(String[] expected, String[] actual) {
+        BiPredicate<String, String> headerEqualsIgnoreCase = String::equalsIgnoreCase;
+        boolean isEqual = Boolean.TRUE;
+        for (int i = 0; i < expected.length; i++) {
+            isEqual = headerEqualsIgnoreCase.test(expected[i], actual[i]);
+            if (!isEqual) {
+                break;
+            }
+        }
+        return isEqual;
     }
 }

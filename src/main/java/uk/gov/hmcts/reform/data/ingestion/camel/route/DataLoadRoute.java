@@ -9,6 +9,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.BindyType;
 import org.apache.camel.model.language.SimpleExpression;
 import org.apache.camel.spring.spi.SpringTransactionPolicy;
+import org.apache.commons.lang.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.data.ingestion.camel.processor.ExceptionProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.FileReadProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.FileResponseProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.HeaderValidationProcessor;
+import uk.gov.hmcts.reform.data.ingestion.camel.processor.ParentStateCheckProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
 
@@ -30,8 +32,10 @@ import javax.sql.DataSource;
 
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang.WordUtils.uncapitalize;
+import static org.apache.logging.log4j.util.Strings.isBlank;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DIRECT_ROUTE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_FILE_STALE;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_PARENT_FAILED;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.MAPPING_METHOD;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.TRUNCATE_ROUTE_PREFIX;
 
@@ -74,6 +78,9 @@ public class DataLoadRoute {
 
     @Autowired
     DataSource dataSource;
+
+    @Autowired
+    ParentStateCheckProcessor parentStateCheckProcessor;
 
     @Transactional("txManager")
     public void startRoute(String startRoute, List<String> routesToExecute) throws FailedToCreateRouteException {
@@ -139,12 +146,17 @@ public class DataLoadRoute {
                                 .transacted()
                                 .policy(springTransactionPolicyNew)
                                 .setHeader(MappingConstants.ROUTE_DETAILS, () -> route)
+                                //checks parent failure status & set header
+                                .process(parentStateCheckProcessor)
+                                .choice()
+                                .when(header(IS_PARENT_FAILED).isEqualTo(false))
                                 .setProperty(MappingConstants.BLOBPATH, exp)
                                 .process(fileReadProcessor)
                                 .choice()
                                 .when(header(IS_FILE_STALE).isEqualTo(false))
                                 .to(route.getTruncateSql())
                                 .to(DIRECT_ROUTE + route.getRouteName())
+                                .endChoice()
                                 .endChoice()
                                 .end();
                         }
@@ -200,9 +212,24 @@ public class DataLoadRoute {
                 MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.FILE_NAME));
             properties.setTableName(environment.getProperty(
                 MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.TABLE_NAME));
+            properties.setCsvHeadersExpected(environment.getProperty(
+                MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.CSV_HEADERS_EXPECTED));
+            String isHeaderValidationEnabled = environment.getProperty(
+                MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.IS_HEADER_VALIDATION_ENABLED);
+            if (isBlank(isHeaderValidationEnabled)) {
+                isHeaderValidationEnabled = Boolean.FALSE.toString();
+            }
+            properties.setIsHeaderValidationEnabled(isHeaderValidationEnabled);
             routePropertiesList.add(index, properties);
             properties.setDeleteSql(environment.getProperty(MappingConstants.ROUTE + "."
                 + routeName + "." + MappingConstants.DELETE_SQL));
+            String parentFailureEnabled = environment.getProperty(MappingConstants.ROUTE + "."
+                + routeName + "." + MappingConstants.PARENT_FAILURE_ENABLED);
+            if (nonNull(parentFailureEnabled)) {
+                properties.setParentFailureEnabled(BooleanUtils.toBoolean(parentFailureEnabled));
+            }
+            properties.setParentFileName(environment.getProperty(MappingConstants.ROUTE + "."
+                + routeName + "." + MappingConstants.PARENT_NAME));
             index++;
         }
         return routePropertiesList;

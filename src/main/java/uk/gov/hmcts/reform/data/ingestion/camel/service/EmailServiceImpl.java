@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.EmailFailureException;
 
@@ -30,15 +31,16 @@ import static org.apache.commons.lang.StringUtils.EMPTY;
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Slf4j
+@Lazy
 public class EmailServiceImpl implements IEmailService {
 
-    @Value("${sendgrid.mail.from}")
+    @Value("${sendgrid.mail.from:''}")
     private String mailFrom;
 
-    @Value("${spring.mail.to}")
+    @Value("${spring.mail.to:''}")
     private List<String> mailTo;
 
-    @Value("${spring.mail.subject}")
+    @Value("${spring.mail.subject:''}")
     private String mailsubject;
 
     @Value("${spring.mail.enabled:false}")
@@ -47,10 +49,10 @@ public class EmailServiceImpl implements IEmailService {
     @Value("${spring.esb.mail.enabled:false}")
     private boolean esbMailEnabled;
 
-    @Value("${spring.esb.mail.subject}")
+    @Value("${spring.esb.mail.subject:''}")
     private String esbMailSubject;
 
-    @Value("${spring.esb.mail.to}")
+    @Value("${spring.esb.mail.to:''}")
     private List<String> esbMailTo;
 
     @Value("${logging-component-name:data_ingestion}")
@@ -59,7 +61,7 @@ public class EmailServiceImpl implements IEmailService {
     @Value("${ENV_NAME:''}")
     private String environmentName;
 
-    @Autowired
+    @Autowired(required = false)
     private SendGrid sendGrid;
 
     /**
