@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 
@@ -38,6 +39,7 @@ import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.IS_PARENT_FAILED;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.MAPPING_METHOD;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.TRUNCATE_ROUTE_PREFIX;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SQL_DELIMITER;
 
 /**
  * This DataLoadRoute is camel DSL route to execute and process blob files
@@ -87,7 +89,6 @@ public class DataLoadRoute {
 
         List<RouteProperties> routePropertiesList = getRouteProperties(routesToExecute);
 
-
         try {
             camelContext.addRoutes(
                 new RouteBuilder() {
@@ -116,6 +117,8 @@ public class DataLoadRoute {
                             List<String> sqls = new ArrayList<>();
                             int loopCount = getLoopCount(route, sqls);
 
+                            Optional<String> updateSqlOptional = route.getUpdateSql();
+
                             from(DIRECT_ROUTE + route.getRouteName()).id(DIRECT_ROUTE + route.getRouteName())
                                 .transacted().policy(springTransactionPolicy)
                                 .process(headerValidationProcessor)
@@ -123,19 +126,20 @@ public class DataLoadRoute {
                                 applicationContext.getBean(route.getBinder()).getClass())
                                 .process((Processor) applicationContext.getBean(route.getProcessor()))
                                 .loop(loopCount)
-                                //delete & Insert process
-                                .split().body()
-                                .streaming()
-                                .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
-
-                                .process(exchange -> {
-                                    Integer index = (Integer) exchange
-                                        .getProperty(Exchange.LOOP_INDEX);
-                                    exchange.getIn().setHeader("sqlToExecute", sqls.get(index));
-                                })
-                                .toD("${header.sqlToExecute}")
+                                    //delete & Insert process
+                                    .split().body()
+                                    .streaming()
+                                    .bean(applicationContext.getBean(route.getMapper()), MAPPING_METHOD)
+                                    .process(exchange -> setHeader(exchange, "sqlToExecute", sqls))
+                                    .toD("${header.sqlToExecute}")
                                 .end()
                                 .process(fileResponseProcessor)
+                                .setHeader("isUpdateSQL", updateSqlOptional::isEmpty)
+                                .choice()
+                                    .when(header("isUpdateSQL").isEqualTo(false))
+                                        .setHeader("updateSQLs", updateSqlOptional::get)
+                                        .recipientList(header("updateSQLs"), SQL_DELIMITER)
+                                .end()
                                 .end()
                                 .end(); //end route
 
@@ -168,6 +172,10 @@ public class DataLoadRoute {
         }
     }
 
+    private void setHeader(Exchange exchange, String headerName, List<String> sqls) {
+        Integer index = (Integer) exchange.getProperty(Exchange.LOOP_INDEX);
+        exchange.getIn().setHeader(headerName, sqls.get(index));
+    }
 
     private String[] createDirectRoutesForMulticast(List<String> routeList) {
         int index = 0;
@@ -239,7 +247,6 @@ public class DataLoadRoute {
         if ((nonNull(route.getDeleteSql()))) {
             sqls.add(route.getDeleteSql());
         }
-        route.getUpdateSql().ifPresent(sqls::add);
         sqls.add(route.getSql());
         return sqls.size();
     }

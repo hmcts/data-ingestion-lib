@@ -31,6 +31,8 @@ public class MappingConstants {
 
     public static final String MAPPING_METHOD = "getMap";
 
+    public static final String SQL_DELIMITER = "##";
+
     public static final String ID = "id";
 
     public static final String FILE_NAME = "file-name";
