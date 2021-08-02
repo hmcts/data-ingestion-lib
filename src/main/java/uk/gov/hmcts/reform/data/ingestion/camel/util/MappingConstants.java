@@ -13,6 +13,8 @@ public class MappingConstants {
 
     public static final String INSERT_SQL = "insert-sql";
 
+    public static final String UPDATE_SQL = "update-sql";
+
     public static final String DELETE_SQL = "delete-sql";
 
     public static final String DEFERRED_SQL = "deferred-sql";
@@ -28,6 +30,8 @@ public class MappingConstants {
     public static final String MAPPER = "mapper-class";
 
     public static final String MAPPING_METHOD = "getMap";
+
+    public static final String SQL_DELIMITER = "##";
 
     public static final String ID = "id";
 
