@@ -1,0 +1,37 @@
+package uk.gov.hmcts.reform.data.ingestion.camel.service.dto;
+
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import uk.gov.hmcts.reform.data.ingestion.camel.exception.EmailFailureException;
+
+import java.util.List;
+
+import static java.util.Objects.isNull;
+
+@Setter
+@Getter
+@Builder
+public class Email {
+
+    private String from;
+
+    private String subject;
+
+    private List<String> to;
+
+    private String fileName;
+
+    private String messageBody;
+
+    private String environment;
+
+    public void validate() {
+        if (isNull(from) || isNull(to) || isNull(subject) || isNull(environment)) {
+            throw new EmailFailureException("Can't send email as some of the mandatory email parameters are missing - "
+                    + " From: {" + from + "} To: {" + to + "} Subject: {" + subject
+                    + "} Environment: {" + environment + "}.");
+        }
+    }
+
+}

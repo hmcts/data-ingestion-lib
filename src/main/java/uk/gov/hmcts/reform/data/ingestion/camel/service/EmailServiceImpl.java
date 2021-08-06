@@ -6,7 +6,6 @@ import com.sendgrid.Response;
 import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
-import com.sendgrid.helpers.mail.objects.Email;
 import com.sendgrid.helpers.mail.objects.Personalization;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.EmailFailureException;
+import uk.gov.hmcts.reform.data.ingestion.camel.service.dto.Email;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,70 +34,32 @@ import static org.apache.commons.lang.StringUtils.EMPTY;
 @Lazy
 public class EmailServiceImpl implements IEmailService {
 
-    @Value("${sendgrid.mail.from:''}")
-    private String mailFrom;
-
-    @Value("${spring.mail.to:''}")
-    private List<String> mailTo;
-
-    @Value("${spring.mail.subject:''}")
-    private String mailsubject;
-
-    @Value("${spring.mail.enabled:false}")
-    private boolean mailEnabled;
-
-    @Value("${spring.esb.mail.enabled:false}")
-    private boolean esbMailEnabled;
-
-    @Value("${spring.esb.mail.subject:''}")
-    private String esbMailSubject;
-
-    @Value("${spring.esb.mail.to:''}")
-    private List<String> esbMailTo;
-
     @Value("${logging-component-name:data_ingestion}")
     private String logComponentName;
-
-    @Value("${ENV_NAME:''}")
-    private String environmentName;
 
     @Autowired(required = false)
     private SendGrid sendGrid;
 
-    /**
-     * Triggers failure mails with reason of failure if mailing is enabled.
-     *
-     * @param messageBody String
-     * @param filename    String
-     */
-    //TODO: Need to refactor this code
-    @Override
-    public void sendEmail(String messageBody, String filename) {
+    private static final String EMAIL_SUBJECT = "%s::%s %s";
 
-        // mailEnabled and esbMailEnabled cannot be TRUE at the same time.
-        if (mailEnabled || esbMailEnabled) {
-            if (mailEnabled) {
-                filename = isNull(filename) ? EMPTY : filename;
-                mailsubject = environmentName.concat("::" + mailsubject.concat(filename));
-                sendMail(mailTo, mailsubject, messageBody);
-            } else if (esbMailEnabled) {
-                sendMail(esbMailTo, esbMailSubject, messageBody);
-            }
-        } else {
-            log.info("{}:: Exception in data ingestion, but emails alerts has been disabled", logComponentName);
-        }
+    @Override
+    public void sendEmail(Email emailDto) {
+        emailDto.validate();
+        String filename = emailDto.getFileName();
+        filename = isNull(filename) ? EMPTY : filename;
+        String subject = String.format(EMAIL_SUBJECT, emailDto.getEnvironment(), emailDto.getSubject(), filename);
+        sendMail(emailDto.getTo(), subject, emailDto.getMessageBody(), emailDto.getFrom());
     }
 
-
-    private void sendMail(List<String> emailTo, String emailSubject, String messageBody) {
+    private void sendMail(List<String> emailTo, String emailSubject, String messageBody, String from) {
         try {
             var personalization = new Personalization();
             emailTo.forEach(email -> {
-                personalization.addTo(new Email(email));
+                personalization.addTo(new com.sendgrid.helpers.mail.objects.Email(email));
             });
             Content content = new Content("text/plain", messageBody);
             Mail mail = new Mail();
-            mail.setFrom(new Email(mailFrom));
+            mail.setFrom(new com.sendgrid.helpers.mail.objects.Email(from));
             mail.setSubject(emailSubject);
             mail.addContent(content);
             mail.addPersonalization(personalization);
@@ -112,10 +74,5 @@ public class EmailServiceImpl implements IEmailService {
             log.error("{}:: Exception  while  sending mail  {}", logComponentName, ex.getMessage());
             throw new EmailFailureException(ex);
         }
-    }
-
-    @Override
-    public void setEsbMailEnabled(boolean esbMailEnabled) {
-        this.esbMailEnabled = esbMailEnabled;
     }
 }

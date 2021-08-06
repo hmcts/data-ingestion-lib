@@ -12,19 +12,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mail.javamail.JavaMailSender;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.EmailFailureException;
+import uk.gov.hmcts.reform.data.ingestion.camel.service.dto.Email;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
-import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @ExtendWith(MockitoExtension.class)
 public class EmailServiceTest {
@@ -32,14 +30,7 @@ public class EmailServiceTest {
     @InjectMocks
     EmailServiceImpl emailServiceImpl;
 
-    @Mock
-    JavaMailSender mailSender;
-    String mailFrom;
-    List<String> mailTo;
-    String mailsubject;
-    String messageBody;
-    String filename;
-    Boolean mailEnabled = true;
+    Email emailDto;
 
     @Mock
     SendGrid sendGrid;
@@ -55,34 +46,75 @@ public class EmailServiceTest {
     }
 
     private void mockData() {
-        mailFrom = "no-reply@reform.hmcts.net";
-        mailTo = new ArrayList<>();
+        var mailTo = new ArrayList<String>();
         mailTo.add("example1@hmcts.net");
-        mailsubject = "Test mail";
-        messageBody = "Test";
-        filename = "File1.csv";
-        mailEnabled = true;
-        setField(emailServiceImpl, "mailFrom", mailFrom);
-        setField(emailServiceImpl, "mailTo", mailTo);
-        setField(emailServiceImpl, "mailsubject", mailsubject);
-        setField(emailServiceImpl, "mailEnabled", Boolean.TRUE);
-        setField(emailServiceImpl, "environmentName", "");
+        emailDto = Email
+                .builder()
+                .fileName("File1.csv")
+                .from("no-reply@reform.hmcts.net")
+                .to(mailTo)
+                .subject("Test mail")
+                .messageBody("Test")
+                .environment("TEST")
+                .build();
     }
 
     @Test
     @SneakyThrows
-    public void testSendEmail() {
+    void testSendEmail() {
         when(sendGrid.api(any(Request.class))).thenReturn(response);
-        emailServiceImpl.sendEmail(messageBody, filename);
-        assertEquals("Test", messageBody);
-        assertEquals("File1.csv", filename);
+        emailServiceImpl.sendEmail(emailDto);
+        assertEquals("Test", emailDto.getMessageBody());
+        assertEquals("File1.csv", emailDto.getFileName());
+    }
+    
+    @Test
+    @SneakyThrows
+    void testSendEmail_WhenNonMandatoryParametersNotPassed() {
+        when(sendGrid.api(any(Request.class))).thenReturn(response);
+        emailDto.setFileName(null);
+        emailDto.setMessageBody(null);
+        emailServiceImpl.sendEmail(emailDto);
+        assertEquals("TEST", emailDto.getEnvironment());
     }
 
     @Test
     @SneakyThrows
-    public void testMailException() {
+    void testMailException() {
         doThrow(IOException.class).when(sendGrid).api(any(Request.class));
         assertThrows(EmailFailureException.class, () -> emailServiceImpl
-            .sendEmail("Test", "File1.csv"));
+            .sendEmail(emailDto));
+    }
+
+    @Test
+    @SneakyThrows
+    void testMailException_NoMailToGiven() {
+        emailDto.setTo(null);
+        assertThrows(EmailFailureException.class, () -> emailServiceImpl
+                .sendEmail(emailDto));
+    }
+
+    @Test
+    @SneakyThrows
+    void testMailException_NoMailFromGiven() {
+        emailDto.setFrom(null);
+        assertThrows(EmailFailureException.class, () -> emailServiceImpl
+                .sendEmail(emailDto));
+    }
+
+    @Test
+    @SneakyThrows
+    void testMailException_NoMailSubjectGiven() {
+        emailDto.setSubject(null);
+        assertThrows(EmailFailureException.class, () -> emailServiceImpl
+                .sendEmail(emailDto));
+    }
+
+    @Test
+    @SneakyThrows
+    void testMailException_NoEnvironmentGiven() {
+        emailDto.setEnvironment(null);
+        assertThrows(EmailFailureException.class, () -> emailServiceImpl
+                .sendEmail(emailDto));
     }
 }
