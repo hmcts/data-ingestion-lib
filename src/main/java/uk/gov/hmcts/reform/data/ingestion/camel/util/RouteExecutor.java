@@ -4,11 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.data.ingestion.camel.service.IEmailService;
 
-import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SUCCESS;
@@ -25,12 +22,6 @@ public abstract class RouteExecutor implements IRouteExecutor {
 
     @Autowired
     protected ProducerTemplate producerTemplate;
-
-    @Autowired
-    protected IEmailService emailService;
-
-    @Value("${archival-file-names}")
-    List<String> archivalFileNames;
 
     @Override
     public String execute(CamelContext camelContext, String schedulerName, String route) {

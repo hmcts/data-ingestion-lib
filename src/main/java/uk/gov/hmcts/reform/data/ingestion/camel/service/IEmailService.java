@@ -9,6 +9,6 @@ public interface IEmailService {
      *
      * @param emailDto The dto object that holds all the details required to send an email.
      */
-    void sendEmail(Email emailDto);
+    int sendEmail(Email emailDto);
 
 }

@@ -50,12 +50,10 @@ public class EmailServiceTest {
         mailTo.add("example1@hmcts.net");
         emailDto = Email
                 .builder()
-                .fileName("File1.csv")
                 .from("no-reply@reform.hmcts.net")
                 .to(mailTo)
                 .subject("Test mail")
                 .messageBody("Test")
-                .environment("TEST")
                 .build();
     }
 
@@ -65,17 +63,16 @@ public class EmailServiceTest {
         when(sendGrid.api(any(Request.class))).thenReturn(response);
         emailServiceImpl.sendEmail(emailDto);
         assertEquals("Test", emailDto.getMessageBody());
-        assertEquals("File1.csv", emailDto.getFileName());
+        assertEquals("Test mail", emailDto.getSubject());
     }
     
     @Test
     @SneakyThrows
     void testSendEmail_WhenNonMandatoryParametersNotPassed() {
         when(sendGrid.api(any(Request.class))).thenReturn(response);
-        emailDto.setFileName(null);
         emailDto.setMessageBody(null);
         emailServiceImpl.sendEmail(emailDto);
-        assertEquals("TEST", emailDto.getEnvironment());
+        assertEquals("Test mail", emailDto.getSubject());
     }
 
     @Test
@@ -106,14 +103,6 @@ public class EmailServiceTest {
     @SneakyThrows
     void testMailException_NoMailSubjectGiven() {
         emailDto.setSubject(null);
-        assertThrows(EmailFailureException.class, () -> emailServiceImpl
-                .sendEmail(emailDto));
-    }
-
-    @Test
-    @SneakyThrows
-    void testMailException_NoEnvironmentGiven() {
-        emailDto.setEnvironment(null);
         assertThrows(EmailFailureException.class, () -> emailServiceImpl
                 .sendEmail(emailDto));
     }
