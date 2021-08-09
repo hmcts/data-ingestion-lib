@@ -20,18 +20,12 @@ public class Email {
 
     private List<String> to;
 
-    private String fileName;
-
     private String messageBody;
 
-    private String environment;
-
     public void validate() {
-        if (isNull(from) || isNull(to) || isNull(subject) || isNull(environment)) {
+        if (isNull(from) || isNull(to) || isNull(subject)) {
             throw new EmailFailureException("Can't send email as some of the mandatory email parameters are missing - "
-                    + " From: {" + from + "} To: {" + to + "} Subject: {" + subject
-                    + "} Environment: {" + environment + "}.");
+                    + " From: {" + from + "} To: {" + to + "} Subject: {" + subject + "}.");
         }
     }
-
 }
