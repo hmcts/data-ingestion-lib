@@ -31,7 +31,7 @@ import java.io.IOException;
 public class EmailServiceImpl implements IEmailService {
 
     @Value("${logging-component-name:data_ingestion}")
-    private final String logComponentName;
+    private String logComponentName;
 
     @Autowired(required = false)
     private SendGrid sendGrid;

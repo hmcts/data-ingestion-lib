@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.data.ingestion.camel.exception.EmailFailureException;
 import java.util.List;
 
 import static java.util.Objects.isNull;
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 
 @Setter
 @Getter
@@ -23,7 +24,7 @@ public class Email {
     private String messageBody;
 
     public void validate() {
-        if (isNull(from) || isNull(to) || isNull(subject)) {
+        if (isNull(from) || isEmpty(to) || isNull(subject)) {
             throw new EmailFailureException("Can't send email as some of the mandatory email parameters are missing - "
                     + " From: {" + from + "} To: {" + to + "} Subject: {" + subject + "}.");
         }
