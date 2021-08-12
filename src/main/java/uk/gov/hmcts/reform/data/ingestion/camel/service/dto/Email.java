@@ -1,8 +1,7 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.service.dto;
 
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.EmailFailureException;
 
 import java.util.List;
@@ -10,8 +9,7 @@ import java.util.List;
 import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 
-@Setter
-@Getter
+@Data
 @Builder
 public class Email {
 
