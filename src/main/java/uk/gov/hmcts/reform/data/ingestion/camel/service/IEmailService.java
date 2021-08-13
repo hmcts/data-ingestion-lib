@@ -1,8 +1,14 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.service;
 
+import uk.gov.hmcts.reform.data.ingestion.camel.service.dto.Email;
+
 public interface IEmailService {
 
-    void setEsbMailEnabled(boolean esbMailEnabled);
+    /**
+     * Triggers failure mails with reason of failure.
+     *
+     * @param emailDto The dto object that holds all the details required to send an email.
+     */
+    int sendEmail(Email emailDto);
 
-    void sendEmail(String messageBody, String filename);
 }
