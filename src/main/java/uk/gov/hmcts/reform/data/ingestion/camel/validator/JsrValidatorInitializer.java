@@ -157,20 +157,14 @@ public class JsrValidatorInitializer<T> {
         log.info("{}:: JsrValidatorInitializer data processing audit complete::", logComponentName);
     }
 
-    private Long getRowId(Object rootBean) {
-        if (rootBean instanceof CommonCsvField) {
-            return ((CommonCsvField) rootBean).getRowId();
-        }
-        return 0L;
-    }
-
     /**
      * Auditing JSR Exception for skipped parent in child.
      *
      * @param keys     List
      * @param exchange Exchange
      */
-    public void auditJsrExceptions(List<Pair<String, Long>> keys, String fieldInError, String errorMessage, Exchange exchange) {
+    public void auditJsrExceptions(List<Pair<String, Long>> keys, String fieldInError, String errorMessage,
+                                   Exchange exchange) {
 
         log.info("{}:: JsrValidatorInitializer data processing audit start for skipping parent table violation {}",
             logComponentName);
@@ -228,6 +222,13 @@ public class JsrValidatorInitializer<T> {
             throw new RouteFailedException("JSR auditing failed getting auditing key values");
         }
         return "";
+    }
+
+    private Long getRowId(Object rootBean) {
+        if (rootBean instanceof CommonCsvField) {
+            return ((CommonCsvField) rootBean).getRowId();
+        }
+        return 0L;
     }
 
     public Set<ConstraintViolation<T>> getConstraintViolations() {

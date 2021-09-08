@@ -13,7 +13,7 @@ public class CommonCsvFieldProcessor implements Processor {
 
 
     /**
-     * Processes the message exchange and set the row id for the record(s)
+     * Processes the message exchange and set the row id for the record(s).
      * @param exchange the message exchange
      */
     @Override
