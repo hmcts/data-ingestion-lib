@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.data.ingestion.camel.processor.FileReadProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.FileResponseProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.HeaderValidationProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.ParentStateCheckProcessor;
+import uk.gov.hmcts.reform.data.ingestion.camel.processor.CommonCsvFieldProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
 
@@ -84,6 +85,9 @@ public class DataLoadRoute {
     @Autowired
     ParentStateCheckProcessor parentStateCheckProcessor;
 
+    @Autowired
+    CommonCsvFieldProcessor commonCsvFieldProcessor;
+
     @Transactional("txManager")
     public void startRoute(String startRoute, List<String> routesToExecute) throws FailedToCreateRouteException {
 
@@ -124,6 +128,7 @@ public class DataLoadRoute {
                                 .process(headerValidationProcessor)
                                 .split(body()).unmarshal().bindy(BindyType.Csv,
                                 applicationContext.getBean(route.getBinder()).getClass())
+                                .process(commonCsvFieldProcessor)
                                 .process((Processor) applicationContext.getBean(route.getProcessor()))
                                 .loop(loopCount)
                                     //delete & Insert process

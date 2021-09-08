@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import uk.gov.hmcts.reform.data.ingestion.camel.domain.CommonCsvField;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 
@@ -146,6 +148,7 @@ public class JsrValidatorInitializer<T> {
                     ps.setString(5, argument.getPropertyPath().toString());
                     ps.setString(6, argument.getMessage());
                     ps.setTimestamp(7, new Timestamp(new Date().getTime()));
+                    ps.setLong(8, getRowId(argument.getRootBean()));
                 }
             });
 
@@ -154,13 +157,20 @@ public class JsrValidatorInitializer<T> {
         log.info("{}:: JsrValidatorInitializer data processing audit complete::", logComponentName);
     }
 
+    private Long getRowId(Object rootBean) {
+        if (rootBean instanceof CommonCsvField) {
+            return ((CommonCsvField) rootBean).getRowId();
+        }
+        return 0L;
+    }
+
     /**
      * Auditing JSR Exception for skipped parent in child.
      *
      * @param keys     List
      * @param exchange Exchange
      */
-    public void auditJsrExceptions(List<String> keys, String fieldInError, String errorMessage, Exchange exchange) {
+    public void auditJsrExceptions(List<Pair<String, Long>> keys, String fieldInError, String errorMessage, Exchange exchange) {
 
         log.info("{}:: JsrValidatorInitializer data processing audit start for skipping parent table violation {}",
             logComponentName);
@@ -176,16 +186,17 @@ public class JsrValidatorInitializer<T> {
             invalidJsrSql,
             keys,
             jdbcBatchSize,
-            new ParameterizedPreparedStatementSetter<String>() {
+            new ParameterizedPreparedStatementSetter<Pair<String, Long>>() {
                 @Override
-                public void setValues(PreparedStatement ps, String argument) throws SQLException {
+                public void setValues(PreparedStatement ps, Pair<String, Long> argument) throws SQLException {
                     ps.setString(1, routeProperties.getTableName());
                     ps.setTimestamp(2, new Timestamp(Long.valueOf(schedulerTime)));
                     ps.setString(3, globalOptions.get(SCHEDULER_NAME));
-                    ps.setString(4, argument);
+                    ps.setString(4, argument.getLeft());
                     ps.setString(5, fieldInError);
                     ps.setString(6, errorMessage);
                     ps.setTimestamp(7, new Timestamp(new Date().getTime()));
+                    ps.setLong(8, argument.getRight());
                 }
             });
 
