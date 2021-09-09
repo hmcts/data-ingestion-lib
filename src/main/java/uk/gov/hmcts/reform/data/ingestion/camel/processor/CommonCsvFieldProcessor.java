@@ -19,16 +19,17 @@ public class CommonCsvFieldProcessor implements Processor {
     @Override
     @SuppressWarnings("unchecked")
     public void process(Exchange exchange) {
-        AtomicInteger counter = new AtomicInteger(1);
+        // setting initial value as 2 because first row contains headers.
         if (exchange.getIn().getBody() instanceof List) {
+            AtomicInteger counter = new AtomicInteger(2);
             List<CommonCsvField> body = (List<CommonCsvField>) exchange.getIn().getBody();
             body.forEach(i -> i.setRowId((long) counter.getAndIncrement())
             );
             exchange.getMessage().setBody(body);
         } else {
             CommonCsvField body = (CommonCsvField) exchange.getIn().getBody();
-            // setting row id to 1 because there is only one record
-            body.setRowId(1L);
+            // setting row id to 2 because there is only one record
+            body.setRowId(2L);
             exchange.getMessage().setBody(body);
         }
     }
