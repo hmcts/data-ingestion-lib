@@ -15,6 +15,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.data.ingestion.camel.processor.CommonCsvFieldProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.ExceptionProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.FileReadProcessor;
 import uk.gov.hmcts.reform.data.ingestion.camel.processor.FileResponseProcessor;
@@ -84,6 +85,9 @@ public class DataLoadRoute {
     @Autowired
     ParentStateCheckProcessor parentStateCheckProcessor;
 
+    @Autowired
+    CommonCsvFieldProcessor commonCsvFieldProcessor;
+
     @Transactional("txManager")
     public void startRoute(String startRoute, List<String> routesToExecute) throws FailedToCreateRouteException {
 
@@ -124,6 +128,7 @@ public class DataLoadRoute {
                                 .process(headerValidationProcessor)
                                 .split(body()).unmarshal().bindy(BindyType.Csv,
                                 applicationContext.getBean(route.getBinder()).getClass())
+                                .process(commonCsvFieldProcessor)
                                 .process((Processor) applicationContext.getBean(route.getProcessor()))
                                 .loop(loopCount)
                                     //delete & Insert process
