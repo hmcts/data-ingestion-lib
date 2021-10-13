@@ -15,10 +15,9 @@ import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.FileStatus;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
-import static java.lang.Long.valueOf;
+import static java.lang.Long.parseLong;
 import static java.lang.System.currentTimeMillis;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -52,6 +51,9 @@ public class AuditServiceImpl implements IAuditService {
     @Value("${scheduler-audit-select}")
     protected String getSchedulerAuditDetails;
 
+    @Value("${scheduler-audit-prev-day}")
+    protected String prevDayAuditDetails;
+
     @Value("${invalid-exception-sql}")
     String invalidExceptionSql;
 
@@ -74,7 +76,7 @@ public class AuditServiceImpl implements IAuditService {
         Map<String, String> globalOptions = camelContext.getGlobalOptions();
         String schedulerName = globalOptions.get(SCHEDULER_NAME);
 
-        Timestamp schedulerStartTime = new Timestamp(valueOf((globalOptions.get(SCHEDULER_START_TIME))));
+        Timestamp schedulerStartTime = new Timestamp(parseLong((globalOptions.get(SCHEDULER_START_TIME))));
 
 
         for (FileStatus fileStatus : fileStatuses) {
@@ -96,7 +98,7 @@ public class AuditServiceImpl implements IAuditService {
      */
     public void auditException(final CamelContext camelContext, String exceptionMessage) {
         Map<String, String> globalOptions = camelContext.getGlobalOptions();
-        Timestamp schedulerStartTime = new Timestamp(Long.valueOf((globalOptions.get(SCHEDULER_START_TIME))));
+        Timestamp schedulerStartTime = new Timestamp(parseLong((globalOptions.get(SCHEDULER_START_TIME))));
         String schedulerName = globalOptions.get(SCHEDULER_NAME);
         DefaultTransactionDefinition def = new DefaultTransactionDefinition();
 
@@ -109,14 +111,24 @@ public class AuditServiceImpl implements IAuditService {
         platformTransactionManager.commit(status);
     }
 
-
     /**
-     * check auditing is done/not.
+     * check auditing is done/not on the current day.
      *
      * @return boolean
      */
     public boolean isAuditingCompleted() {
-        return jdbcTemplate.queryForObject(getSchedulerAuditDetails, Integer.class) > 0 ? TRUE : FALSE;
+        return
+            Optional.ofNullable(jdbcTemplate.queryForObject(getSchedulerAuditDetails, Integer.class))
+                    .orElse(0) > 0;
     }
 
+    /**
+     * check auditing is done/not on the previous day.
+     *
+     * @return boolean
+     */
+    public boolean isAuditingCompletedPrevDay() {
+        return
+            Optional.ofNullable(jdbcTemplate.queryForObject(prevDayAuditDetails, Integer.class)).orElse(0) > 0;
+    }
 }
