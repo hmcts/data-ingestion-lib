@@ -203,6 +203,7 @@ public class DataLoadRoute {
         int index = 0;
         for (String routeName : routes) {
             RouteProperties properties = new RouteProperties();
+            properties.setStartRoute(environment.getProperty(MappingConstants.START_ROUTE));
             properties.setRouteName(environment.getProperty(
                 MappingConstants.ROUTE + "." + routeName + "." + MappingConstants.ID));
             properties.setSql(environment.getProperty(

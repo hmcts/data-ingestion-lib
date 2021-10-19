@@ -11,6 +11,8 @@ import java.util.Optional;
 @NoArgsConstructor
 public class RouteProperties {
 
+    String startRoute;
+
     String routeName;
 
     String childNames;

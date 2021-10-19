@@ -1,5 +1,9 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.util;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.function.Predicate;
+
 public class MappingConstants {
 
     private MappingConstants() {
@@ -8,6 +12,12 @@ public class MappingConstants {
     public static final String DATE_FORMAT = "yyyy-MM-dd hh:mm:ss";
 
     public static final String SCHEDULER_START_TIME = "start-time";
+
+    public static final long MILLIS_IN_A_DAY = 1000 * 60 * 60 * 24;
+
+    public static final String START_ROUTE = "start-route";
+
+    public static final String DIRECT_JRD = "direct:JRD";
 
     public static final String ROUTE = "route";
 
@@ -83,4 +93,7 @@ public class MappingConstants {
 
     //parent-name
     public static final String PARENT_NAME = "parent-name";
+
+    public static final Predicate<String> IS_NOT_BLANK = StringUtils::isNotBlank;
+    public static final Predicate<String> IS_START_ROUTE_JRD = startRoute -> startRoute.equals(DIRECT_JRD);
 }

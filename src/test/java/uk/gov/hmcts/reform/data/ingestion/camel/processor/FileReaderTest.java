@@ -29,9 +29,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.BLOBPATH;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ROUTE_DETAILS;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.BLOBPATH;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.MILLIS_IN_A_DAY;
 
 public class FileReaderTest {
 
@@ -83,6 +84,28 @@ public class FileReaderTest {
     public void testProcessStaleFile() {
         when(cloudBlockBlob.exists()).thenReturn(true);
         doNothing().when(auditService).auditException(any(), any());
+        fileReadProcessor.process(exchangeMock);
+        verify(fileReadProcessor).process(exchangeMock);
+    }
+
+    @Test
+    @SneakyThrows
+    void testProcessStaleFileForJRDWhenAuditingCompletedOnPreviousDay() {
+        when(cloudBlockBlob.exists()).thenReturn(true);
+        doNothing().when(auditService).auditException(any(), any());
+        when(routePropertiesMock.getStartRoute()).thenReturn("direct:JRD");
+        when(blobProperties.getLastModified()).thenReturn(new Date(
+                new Date().getTime() - MILLIS_IN_A_DAY));
+        fileReadProcessor.process(exchangeMock);
+        verify(fileReadProcessor).process(exchangeMock);
+    }
+
+    @Test
+    @SneakyThrows
+    void testProcessStaleFileForJRDWhenAuditingCompletedOnCurrentDay() {
+        when(cloudBlockBlob.exists()).thenReturn(true);
+        doNothing().when(auditService).auditException(any(), any());
+        when(routePropertiesMock.getStartRoute()).thenReturn("direct:JRD");
         fileReadProcessor.process(exchangeMock);
         verify(fileReadProcessor).process(exchangeMock);
     }
