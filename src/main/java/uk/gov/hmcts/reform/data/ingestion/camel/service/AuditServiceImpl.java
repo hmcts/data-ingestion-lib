@@ -51,7 +51,8 @@ public class AuditServiceImpl implements IAuditService {
     @Value("${scheduler-audit-select}")
     protected String getSchedulerAuditDetails;
 
-    @Value("${scheduler-audit-prev-day}")
+    @Value("${scheduler-audit-prev-day: "
+            + "select count(*) from dataload_schedular_audit where date(scheduler_start_time) = current_date }")
     protected String prevDayAuditDetails;
 
     @Value("${invalid-exception-sql}")
