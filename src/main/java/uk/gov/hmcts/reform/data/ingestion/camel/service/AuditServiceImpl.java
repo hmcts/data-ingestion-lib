@@ -6,16 +6,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.FileStatus;
+import uk.gov.hmcts.reform.data.ingestion.camel.service.dto.Audit;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import static java.lang.Long.parseLong;
 import static java.lang.System.currentTimeMillis;
@@ -24,8 +30,8 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.DataLoadUtil.getFileDetails;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.DataLoadUtil.isFileExecuted;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_NAME;
-import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SUCCESS;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.FAILURE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.TABLE_NAME;
 
 /**
@@ -36,6 +42,10 @@ import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.TAB
 @Slf4j
 @Component
 public class AuditServiceImpl implements IAuditService {
+
+    public static final String FILE_NAME = "file_name";
+    public static final String SCHEDULER_START_TIME = "scheduler_start_time";
+    public static final String STATUS = "status";
 
     @Autowired
     @Qualifier("springJdbcTemplate")
@@ -60,6 +70,9 @@ public class AuditServiceImpl implements IAuditService {
 
     @Value("${archival-file-names}")
     List<String> archivalFileNames;
+
+    @Value("route.judicial-user-profile-orchestration.file-name: Personal")
+    private String fileName;
 
     /**
      * Capture and log scheduler details with file status.
@@ -128,8 +141,29 @@ public class AuditServiceImpl implements IAuditService {
      *
      * @return boolean
      */
-    public boolean isAuditingCompletedPrevDay() {
-        return
-            Optional.ofNullable(jdbcTemplate.queryForObject(prevDayAuditDetails, Integer.class)).orElse(0) > 0;
+    public boolean isAuditingCompletedPrevDay(Date fileTimeStamp) {
+        Predicate<Audit> failure = audit -> audit.equals(FAILURE);
+
+        List<Audit> previousDayAudits = jdbcTemplate.query(prevDayAuditDetails,
+            new RowMapper<Audit>() {
+                @Override
+                public Audit mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    Audit audit = new Audit();
+                    audit.setFileName(rs.getString(FILE_NAME));
+                    audit.setSchedulerStartTime(rs.getDate(SCHEDULER_START_TIME));
+                    audit.setStatus(rs.getString(STATUS));
+                    return audit;
+                }
+            });
+
+        Optional<Date> prevDaySchedulerStarTime = previousDayAudits.stream()
+            .filter(audit -> audit.getFileName().equals(fileName))
+            .map(Audit::getSchedulerStartTime)
+            .findFirst();
+
+        return prevDaySchedulerStarTime
+            .map(date -> date.after(fileTimeStamp)
+                    && previousDayAudits.stream().noneMatch(failure))
+            .orElse(false);
     }
 }

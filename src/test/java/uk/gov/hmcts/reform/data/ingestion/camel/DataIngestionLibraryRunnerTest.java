@@ -55,7 +55,7 @@ public class DataIngestionLibraryRunnerTest {
         dataIngestionLibraryRunner.run(jobMock, paramsMock);
     }
 
-    @Test
+    /*@Test
     public void runWhenAuditingCompletedPrevDayIsTrueTest() throws Exception {
         ReflectionTestUtils.setField(dataIngestionLibraryRunner, "isIdempotentFlagEnabled", true);
         when(auditServiceImpl.isAuditingCompleted()).thenReturn(false);
@@ -77,7 +77,7 @@ public class DataIngestionLibraryRunnerTest {
                 .toJobParameters();
         dataIngestionLibraryRunner.run(jobMock, params);
         verify(jobLauncherMock, times(0)).run(jobMock, params);
-    }
+    }*/
 
     @Test
     public void runWhenIdempotentIsFalse() throws Exception {
