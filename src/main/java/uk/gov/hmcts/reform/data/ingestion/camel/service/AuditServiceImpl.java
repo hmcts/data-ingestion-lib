@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -15,7 +14,6 @@ import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.FileStatus;
 import uk.gov.hmcts.reform.data.ingestion.camel.service.dto.Audit;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -30,9 +28,13 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.DataLoadUtil.getFileDetails;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.DataLoadUtil.isFileExecuted;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_NAME;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SUCCESS;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.FAILURE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.TABLE_NAME;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DB_FILE_NAME;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DB_SCHEDULER_START_TIME;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DB_STATUS;
 
 /**
  * This AuditServiceImpl auditing scheduler/file details and logging exceptions.
@@ -42,10 +44,6 @@ import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.TAB
 @Slf4j
 @Component
 public class AuditServiceImpl implements IAuditService {
-
-    public static final String FILE_NAME = "file_name";
-    public static final String SCHEDULER_START_TIME = "scheduler_start_time";
-    public static final String STATUS = "status";
 
     @Autowired
     @Qualifier("springJdbcTemplate")
@@ -141,19 +139,16 @@ public class AuditServiceImpl implements IAuditService {
      *
      * @return boolean
      */
-    public boolean isAuditingCompletedPrevDay(Date fileTimeStamp) {
-        Predicate<Audit> failure = audit -> audit.equals(FAILURE);
+    public boolean isAuditingCompletedPrevDay(Optional<Date> fileTimeStamp) {
+        Predicate<Audit> failure = audit -> audit.getStatus().equals(FAILURE);
 
         List<Audit> previousDayAudits = jdbcTemplate.query(prevDayAuditDetails,
-            new RowMapper<Audit>() {
-                @Override
-                public Audit mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    Audit audit = new Audit();
-                    audit.setFileName(rs.getString(FILE_NAME));
-                    audit.setSchedulerStartTime(rs.getDate(SCHEDULER_START_TIME));
-                    audit.setStatus(rs.getString(STATUS));
-                    return audit;
-                }
+            (ResultSet rs, int rowNum) -> {
+                Audit audit = new Audit();
+                audit.setFileName(rs.getString(DB_FILE_NAME));
+                audit.setSchedulerStartTime(new Date(rs.getDate(DB_SCHEDULER_START_TIME).getTime()));
+                audit.setStatus(rs.getString(DB_STATUS));
+                return audit;
             });
 
         Optional<Date> prevDaySchedulerStarTime = previousDayAudits.stream()
@@ -162,7 +157,8 @@ public class AuditServiceImpl implements IAuditService {
             .findFirst();
 
         return prevDaySchedulerStarTime
-            .map(date -> date.after(fileTimeStamp)
+            .map(date -> date.after(
+                    fileTimeStamp.orElseThrow(() -> new IllegalArgumentException("File Timestamp not found!")))
                     && previousDayAudits.stream().noneMatch(failure))
             .orElse(false);
     }

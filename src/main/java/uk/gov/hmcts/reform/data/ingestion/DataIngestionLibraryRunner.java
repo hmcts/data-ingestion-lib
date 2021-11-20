@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.data.ingestion.camel.service.AuditServiceImpl;
 import uk.gov.hmcts.reform.data.ingestion.configuration.AzureBlobConfig;
 
 import java.util.Date;
+import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -70,14 +71,14 @@ public class DataIngestionLibraryRunner {
 
         CloudBlockBlob cloudBlockBlob = container.getBlockBlobReference(fileName);
 
-        Date fileTimeStamp = null;
+        Optional<Date> fileTimestamp = Optional.empty();
 
         if (cloudBlockBlob.exists()) {
-            fileTimeStamp = cloudBlockBlob.getProperties().getLastModified();
+            fileTimestamp = Optional.ofNullable(cloudBlockBlob.getProperties().getLastModified());
         }
 
         if (isIdempotentFlagEnabled
-                && ((isStartRouteJRD(params) && auditingCompletedTodayOrPrevDay(auditServiceImpl, fileTimeStamp))
+                && ((isStartRouteJRD(params) && auditingCompletedTodayOrPrevDay(auditServiceImpl, fileTimestamp))
                         || isAuditingCompleted.test(auditServiceImpl))) {
 
             log.info("{}:: no run of Data Ingestion Library as it has ran for the day::", logComponentName);
@@ -93,7 +94,7 @@ public class DataIngestionLibraryRunner {
         return IS_NOT_BLANK.and(IS_START_ROUTE_JRD).test(params.getString(START_ROUTE));
     }
 
-    private boolean auditingCompletedTodayOrPrevDay(AuditServiceImpl auditServiceImpl, Date fileTimeStamp) {
+    private boolean auditingCompletedTodayOrPrevDay(AuditServiceImpl auditServiceImpl, Optional<Date> fileTimeStamp) {
         return isAuditingCompleted.test(auditServiceImpl)
                 || isAuditingCompletedPrevDay.test(auditServiceImpl, fileTimeStamp);
     }
@@ -101,6 +102,6 @@ public class DataIngestionLibraryRunner {
     public static final Predicate<AuditServiceImpl> isAuditingCompleted =
             AuditServiceImpl::isAuditingCompleted;
 
-    public static final BiPredicate<AuditServiceImpl, Date> isAuditingCompletedPrevDay =
+    public static final BiPredicate<AuditServiceImpl, Optional<Date>> isAuditingCompletedPrevDay =
             AuditServiceImpl::isAuditingCompletedPrevDay;
 }

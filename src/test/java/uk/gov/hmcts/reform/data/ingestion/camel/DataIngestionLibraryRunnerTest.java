@@ -1,5 +1,10 @@
 package uk.gov.hmcts.reform.data.ingestion.camel;
 
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.blob.BlobProperties;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import org.apache.camel.CamelContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,7 +17,12 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.data.ingestion.DataIngestionLibraryRunner;
 import uk.gov.hmcts.reform.data.ingestion.camel.service.AuditServiceImpl;
+import uk.gov.hmcts.reform.data.ingestion.configuration.AzureBlobConfig;
 
+import java.util.Date;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -20,7 +30,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DIRECT_JRD;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.START_ROUTE;
 
-public class DataIngestionLibraryRunnerTest {
+class DataIngestionLibraryRunnerTest {
 
     @Mock
     AuditServiceImpl auditServiceImpl;
@@ -34,32 +44,57 @@ public class DataIngestionLibraryRunnerTest {
     @Mock
     CamelContext camelContext;
 
+    @Mock
+    CloudStorageAccount cloudStorageAccount;
+
+    @Mock
+    AzureBlobConfig azureBlobConfig;
+
+    @Mock
+    CloudBlobClient blobClient;
+
+    @Mock
+    CloudBlobContainer container;
+
+    @Mock
+    CloudBlockBlob cloudBlockBlob;
+
+    @Mock
+    BlobProperties blobProperties;
+
     @InjectMocks
     DataIngestionLibraryRunner dataIngestionLibraryRunner;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() throws Exception {
         openMocks(this);
+        when(cloudStorageAccount.createCloudBlobClient()).thenReturn(blobClient);
+        when(azureBlobConfig.getContainerName()).thenReturn("test");
+        when(blobClient.getContainerReference(anyString())).thenReturn(container);
+        when(container.getBlockBlobReference(any())).thenReturn(cloudBlockBlob);
+        when(cloudBlockBlob.getProperties()).thenReturn(blobProperties);
+        when(blobProperties.getLastModified()).thenReturn(new Date());
     }
 
     @Test
-    public void runWhenAuditingCompleteIsFalseTest() throws Exception {
+    void runWhenAuditingCompleteIsFalseTest() throws Exception {
         when(auditServiceImpl.isAuditingCompleted()).thenReturn(false);
         dataIngestionLibraryRunner.run(jobMock, paramsMock);
         verify(jobLauncherMock, times(1)).run(jobMock, paramsMock);
     }
 
     @Test
-    public void runWhenAuditingCompleteIsTrueTest() throws Exception {
+    void runWhenAuditingCompleteIsTrueTest() throws Exception {
         when(auditServiceImpl.isAuditingCompleted()).thenReturn(true);
         dataIngestionLibraryRunner.run(jobMock, paramsMock);
     }
 
-    /*@Test
-    public void runWhenAuditingCompletedPrevDayIsTrueTest() throws Exception {
+    @Test
+    void runWhenAuditingCompletedPrevDayIsTrueTest() throws Exception {
         ReflectionTestUtils.setField(dataIngestionLibraryRunner, "isIdempotentFlagEnabled", true);
         when(auditServiceImpl.isAuditingCompleted()).thenReturn(false);
-        when(auditServiceImpl.isAuditingCompletedPrevDay()).thenReturn(true);
+        when(auditServiceImpl.isAuditingCompletedPrevDay(any())).thenReturn(true);
+
         final JobParameters params = new JobParametersBuilder()
                 .addString(START_ROUTE, DIRECT_JRD)
                 .toJobParameters();
@@ -68,19 +103,19 @@ public class DataIngestionLibraryRunnerTest {
     }
 
     @Test
-    public void runWhenAuditingCompletedCurrentDayIsTrueTest() throws Exception {
+    void runWhenAuditingCompletedCurrentDayIsTrueTest() throws Exception {
         ReflectionTestUtils.setField(dataIngestionLibraryRunner, "isIdempotentFlagEnabled", true);
         when(auditServiceImpl.isAuditingCompleted()).thenReturn(true);
-        when(auditServiceImpl.isAuditingCompletedPrevDay()).thenReturn(false);
+        when(auditServiceImpl.isAuditingCompletedPrevDay(any())).thenReturn(false);
         final JobParameters params = new JobParametersBuilder()
                 .addString(START_ROUTE, DIRECT_JRD)
                 .toJobParameters();
         dataIngestionLibraryRunner.run(jobMock, params);
         verify(jobLauncherMock, times(0)).run(jobMock, params);
-    }*/
+    }
 
     @Test
-    public void runWhenIdempotentIsFalse() throws Exception {
+    void runWhenIdempotentIsFalse() throws Exception {
         dataIngestionLibraryRunner.run(jobMock, paramsMock);
         verify(jobLauncherMock, times(1)).run(jobMock, paramsMock);
     }
