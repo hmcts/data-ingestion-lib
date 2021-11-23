@@ -96,4 +96,7 @@ public class MappingConstants {
 
     public static final Predicate<String> IS_NOT_BLANK = StringUtils::isNotBlank;
     public static final Predicate<String> IS_START_ROUTE_JRD = startRoute -> startRoute.equals(DIRECT_JRD);
+    public static final String DB_FILE_NAME = "file_name";
+    public static final String DB_SCHEDULER_START_TIME = "scheduler_start_time";
+    public static final String DB_STATUS = "status";
 }

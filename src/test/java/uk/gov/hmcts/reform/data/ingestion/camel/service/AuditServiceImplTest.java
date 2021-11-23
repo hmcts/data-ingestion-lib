@@ -8,15 +8,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
+import uk.gov.hmcts.reform.data.ingestion.camel.service.dto.Audit;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.sql.ResultSet;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Date;
+import java.util.Calendar;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -26,8 +34,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
-import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_NAME;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SUCCESS;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.FAILURE;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DB_FILE_NAME;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DB_SCHEDULER_START_TIME;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DB_STATUS;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_NAME;
 
 public class AuditServiceImplTest {
 
@@ -59,6 +72,10 @@ public class AuditServiceImplTest {
         setField(dataLoadAuditUnderTest, "platformTransactionManager", platformTransactionManager);
         setField(dataLoadAuditUnderTest, "invalidExceptionSql", "select * from appointment");
         setField(dataLoadAuditUnderTest, "archivalFileNames", files);
+        setField(dataLoadAuditUnderTest, "fileName", "Personal");
+        setField(dataLoadAuditUnderTest, "prevDayAuditDetails",
+                "select file_name, scheduler_start_time, status from dataload_schedular_audit "
+                        + "where date(scheduler_start_time) = current_date - INTEGER '1'");
         //when(camelContext.getRegistry()).thenReturn(registry);
         MockitoAnnotations.openMocks(this);
     }
@@ -95,5 +112,157 @@ public class AuditServiceImplTest {
         verify(mockJdbcTemplate, times(1)).update(any(), (Object[]) any());
         verify(platformTransactionManager, times(1)).getTransaction(any());
         verify(platformTransactionManager, times(1)).commit(transactionStatus);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void should_return_false_when_previous_day_scheduler_start_time_is_before_file_timestamp() {
+        Optional<Date> fileTS = Optional.of(getDate(2021, 11, 16, 8, 30, 0));
+        Date utilDate = getDate(2021, 11, 15, 10, 0, 0);
+        java.sql.Date prevDaySchedulerST = new java.sql.Date(utilDate.getTime());
+
+        when(mockJdbcTemplate.query(anyString(), any(RowMapper.class))).thenAnswer(invocation -> {
+            ResultSet rs = mock(ResultSet.class);
+
+            when(rs.getString(DB_FILE_NAME))
+                    .thenReturn("AdditionalInfoRoles",
+                                "Appointments",
+                                        "Authorisations",
+                                        "BaseLocations",
+                                        "Locations",
+                                        "Personal");
+
+            when(rs.getDate(DB_SCHEDULER_START_TIME))
+                    .thenReturn(prevDaySchedulerST,
+                                prevDaySchedulerST,
+                                prevDaySchedulerST,
+                                prevDaySchedulerST,
+                                prevDaySchedulerST,
+                                prevDaySchedulerST);
+
+            when(rs.getString(DB_STATUS))
+                    .thenReturn(SUCCESS,
+                                SUCCESS,
+                                SUCCESS,
+                                SUCCESS,
+                                SUCCESS,
+                                SUCCESS);
+
+            RowMapper<Audit> rowMapper = (RowMapper<Audit>) invocation.getArgument(1);
+            return List.of(Objects.requireNonNull(rowMapper.mapRow(rs, 0)),
+                    Objects.requireNonNull(rowMapper.mapRow(rs, 1)),
+                    Objects.requireNonNull(rowMapper.mapRow(rs, 2)),
+                    Objects.requireNonNull(rowMapper.mapRow(rs, 3)),
+                    Objects.requireNonNull(rowMapper.mapRow(rs, 4)),
+                    Objects.requireNonNull(rowMapper.mapRow(rs, 5)));
+        });
+
+        assertFalse(dataLoadAuditUnderTest.isAuditingCompletedPrevDay(fileTS));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void should_return_true_when_previous_day_scheduler_start_time_is_after_file_timestamp_with_success() {
+        Optional<Date> fileTS = Optional.of(getDate(2021, 11, 16, 8, 30, 0));
+        Date utilDate = getDate(2021, 11, 16, 10, 0, 0);
+        java.sql.Date prevDaySchedulerST = new java.sql.Date(utilDate.getTime());
+
+        when(mockJdbcTemplate.query(anyString(), any(RowMapper.class))).thenAnswer(invocation -> {
+            ResultSet rs = mock(ResultSet.class);
+
+            when(rs.getString(DB_FILE_NAME))
+                    .thenReturn("AdditionalInfoRoles",
+                            "Appointments",
+                            "Authorisations",
+                            "BaseLocations",
+                            "Locations",
+                            "Personal");
+
+            when(rs.getDate(DB_SCHEDULER_START_TIME))
+                    .thenReturn(prevDaySchedulerST,
+                            prevDaySchedulerST,
+                            prevDaySchedulerST,
+                            prevDaySchedulerST,
+                            prevDaySchedulerST,
+                            prevDaySchedulerST);
+
+            when(rs.getString(DB_STATUS))
+                    .thenReturn(SUCCESS,
+                            SUCCESS,
+                            SUCCESS,
+                            SUCCESS,
+                            SUCCESS,
+                            SUCCESS);
+
+            RowMapper<Audit> rowMapper = (RowMapper<Audit>) invocation.getArgument(1);
+
+            return List.of(Objects.requireNonNull(rowMapper.mapRow(rs, 0)),
+                    Objects.requireNonNull(rowMapper.mapRow(rs, 1)),
+                    Objects.requireNonNull(rowMapper.mapRow(rs, 2)),
+                    Objects.requireNonNull(rowMapper.mapRow(rs, 3)),
+                    Objects.requireNonNull(rowMapper.mapRow(rs, 4)),
+                    Objects.requireNonNull(rowMapper.mapRow(rs, 5)));
+        });
+
+        assertTrue(dataLoadAuditUnderTest.isAuditingCompletedPrevDay(fileTS));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void should_return_false_when_previous_day_scheduler_start_time_is_after_file_timestamp_with_failure() {
+        Optional<Date> fileTS = Optional.of(getDate(2021, 11, 16, 8, 30, 0));
+        Date utilDate = getDate(2021, 11, 16, 10, 0, 0);
+        java.sql.Date prevDaySchedulerST = new java.sql.Date(utilDate.getTime());
+
+        when(mockJdbcTemplate.query(anyString(), any(RowMapper.class))).thenAnswer(invocation -> {
+            ResultSet rs = mock(ResultSet.class);
+
+            when(rs.getString(DB_FILE_NAME))
+                    .thenReturn("AdditionalInfoRoles",
+                            "Appointments",
+                            "Authorisations",
+                            "BaseLocations",
+                            "Locations",
+                            "Personal");
+
+            when(rs.getDate(DB_SCHEDULER_START_TIME))
+                    .thenReturn(prevDaySchedulerST,
+                            prevDaySchedulerST,
+                            prevDaySchedulerST,
+                            prevDaySchedulerST,
+                            prevDaySchedulerST,
+                            prevDaySchedulerST);
+
+            when(rs.getString(DB_STATUS))
+                    .thenReturn(SUCCESS,
+                            FAILURE,
+                            SUCCESS,
+                            SUCCESS,
+                            SUCCESS,
+                            SUCCESS);
+
+            RowMapper<Audit> rowMapper = (RowMapper<Audit>) invocation.getArgument(1);
+
+            return List.of(Objects.requireNonNull(rowMapper.mapRow(rs, 0)),
+                    Objects.requireNonNull(rowMapper.mapRow(rs, 1)),
+                    Objects.requireNonNull(rowMapper.mapRow(rs, 2)),
+                    Objects.requireNonNull(rowMapper.mapRow(rs, 3)),
+                    Objects.requireNonNull(rowMapper.mapRow(rs, 4)),
+                    Objects.requireNonNull(rowMapper.mapRow(rs, 5)));
+        });
+
+        assertFalse(dataLoadAuditUnderTest.isAuditingCompletedPrevDay(fileTS));
+    }
+
+    private static Date getDate(int year, int month, int day, int hour, int minute, int second) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.MONTH, month);
+        cal.set(Calendar.DAY_OF_MONTH, day);
+        cal.set(Calendar.HOUR_OF_DAY, hour);
+        cal.set(Calendar.MINUTE, minute);
+        cal.set(Calendar.SECOND, second);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
     }
 }

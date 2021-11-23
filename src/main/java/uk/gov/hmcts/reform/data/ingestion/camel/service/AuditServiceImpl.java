@@ -11,11 +11,15 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.FileStatus;
+import uk.gov.hmcts.reform.data.ingestion.camel.service.dto.Audit;
 
+import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import static java.lang.Long.parseLong;
 import static java.lang.System.currentTimeMillis;
@@ -26,7 +30,11 @@ import static uk.gov.hmcts.reform.data.ingestion.camel.util.DataLoadUtil.isFileE
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_NAME;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SUCCESS;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.FAILURE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.TABLE_NAME;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DB_FILE_NAME;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DB_SCHEDULER_START_TIME;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DB_STATUS;
 
 /**
  * This AuditServiceImpl auditing scheduler/file details and logging exceptions.
@@ -60,6 +68,9 @@ public class AuditServiceImpl implements IAuditService {
 
     @Value("${archival-file-names}")
     List<String> archivalFileNames;
+
+    @Value("route.judicial-user-profile-orchestration.file-name: Personal")
+    private String fileName;
 
     /**
      * Capture and log scheduler details with file status.
@@ -128,8 +139,27 @@ public class AuditServiceImpl implements IAuditService {
      *
      * @return boolean
      */
-    public boolean isAuditingCompletedPrevDay() {
-        return
-            Optional.ofNullable(jdbcTemplate.queryForObject(prevDayAuditDetails, Integer.class)).orElse(0) > 0;
+    public boolean isAuditingCompletedPrevDay(Optional<Date> fileTimeStamp) {
+        Predicate<Audit> failure = audit -> audit.getStatus().equals(FAILURE);
+
+        List<Audit> previousDayAudits = jdbcTemplate.query(prevDayAuditDetails,
+            (ResultSet rs, int rowNum) -> {
+                Audit audit = new Audit();
+                audit.setFileName(rs.getString(DB_FILE_NAME));
+                audit.setSchedulerStartTime(new Date(rs.getDate(DB_SCHEDULER_START_TIME).getTime()));
+                audit.setStatus(rs.getString(DB_STATUS));
+                return audit;
+            });
+
+        Optional<Date> prevDaySchedulerStarTime = previousDayAudits.stream()
+            .filter(audit -> audit.getFileName().equals(fileName))
+            .map(Audit::getSchedulerStartTime)
+            .findFirst();
+
+        return prevDaySchedulerStarTime
+            .map(date -> date.after(
+                    fileTimeStamp.orElseThrow(() -> new IllegalArgumentException("File Timestamp not found!")))
+                    && previousDayAudits.stream().noneMatch(failure))
+            .orElse(false);
     }
 }
