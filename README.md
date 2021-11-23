@@ -6,7 +6,7 @@ This library has been published in Jit Pack with git push actions on new release
 It can be used in respective projects as gradle dependency like below
 compile group: 'uk.gov.hmcts.reform', name: 'data-ingestion-lib', version: '0.2.5'
 
-# To build the project in local execute the following command
+# To build the project in local execute the following command 
 ./gradlew build 
 
 # How to use library
