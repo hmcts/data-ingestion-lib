@@ -119,7 +119,7 @@ public class AuditServiceImplTest {
     void should_return_false_when_previous_day_scheduler_start_time_is_before_file_timestamp() {
         Optional<Date> fileTS = Optional.of(getDate(2021, 11, 16, 8, 30, 0));
         Date utilDate = getDate(2021, 11, 15, 10, 0, 0);
-        java.sql.Date prevDaySchedulerST = new java.sql.Date(utilDate.getTime());
+        java.sql.Timestamp prevDaySchedulerST = new java.sql.Timestamp(utilDate.getTime());
 
         when(mockJdbcTemplate.query(anyString(), any(RowMapper.class))).thenAnswer(invocation -> {
             ResultSet rs = mock(ResultSet.class);
@@ -132,7 +132,7 @@ public class AuditServiceImplTest {
                                         "Locations",
                                         "Personal");
 
-            when(rs.getDate(DB_SCHEDULER_START_TIME))
+            when(rs.getTimestamp(DB_SCHEDULER_START_TIME))
                     .thenReturn(prevDaySchedulerST,
                                 prevDaySchedulerST,
                                 prevDaySchedulerST,
@@ -165,7 +165,7 @@ public class AuditServiceImplTest {
     void should_return_true_when_previous_day_scheduler_start_time_is_after_file_timestamp_with_success() {
         Optional<Date> fileTS = Optional.of(getDate(2021, 11, 16, 8, 30, 0));
         Date utilDate = getDate(2021, 11, 16, 10, 0, 0);
-        java.sql.Date prevDaySchedulerST = new java.sql.Date(utilDate.getTime());
+        java.sql.Timestamp prevDaySchedulerST = new java.sql.Timestamp(utilDate.getTime());
 
         when(mockJdbcTemplate.query(anyString(), any(RowMapper.class))).thenAnswer(invocation -> {
             ResultSet rs = mock(ResultSet.class);
@@ -178,7 +178,7 @@ public class AuditServiceImplTest {
                             "Locations",
                             "Personal");
 
-            when(rs.getDate(DB_SCHEDULER_START_TIME))
+            when(rs.getTimestamp(DB_SCHEDULER_START_TIME))
                     .thenReturn(prevDaySchedulerST,
                             prevDaySchedulerST,
                             prevDaySchedulerST,
@@ -212,7 +212,7 @@ public class AuditServiceImplTest {
     void should_return_false_when_previous_day_scheduler_start_time_is_after_file_timestamp_with_failure() {
         Optional<Date> fileTS = Optional.of(getDate(2021, 11, 16, 8, 30, 0));
         Date utilDate = getDate(2021, 11, 16, 10, 0, 0);
-        java.sql.Date prevDaySchedulerST = new java.sql.Date(utilDate.getTime());
+        java.sql.Timestamp prevDaySchedulerST = new java.sql.Timestamp(utilDate.getTime());
 
         when(mockJdbcTemplate.query(anyString(), any(RowMapper.class))).thenAnswer(invocation -> {
             ResultSet rs = mock(ResultSet.class);
@@ -225,7 +225,7 @@ public class AuditServiceImplTest {
                             "Locations",
                             "Personal");
 
-            when(rs.getDate(DB_SCHEDULER_START_TIME))
+            when(rs.getTimestamp(DB_SCHEDULER_START_TIME))
                     .thenReturn(prevDaySchedulerST,
                             prevDaySchedulerST,
                             prevDaySchedulerST,

@@ -58,7 +58,7 @@ public class DataIngestionLibraryRunner {
     @Qualifier("credscloudStorageAccount")
     private CloudStorageAccount cloudStorageAccount;
 
-    @Value("route.judicial-user-profile-orchestration.file-name: Personal")
+    @Value("${route.judicial-user-profile-orchestration.file-name:Personal}")
     private String fileName;
 
     public void run(Job job, JobParameters params) throws Exception {
@@ -74,6 +74,7 @@ public class DataIngestionLibraryRunner {
         Optional<Date> fileTimestamp = Optional.empty();
 
         if (cloudBlockBlob.exists()) {
+            cloudBlockBlob.downloadAttributes();
             fileTimestamp = Optional.ofNullable(cloudBlockBlob.getProperties().getLastModified());
         }
 
