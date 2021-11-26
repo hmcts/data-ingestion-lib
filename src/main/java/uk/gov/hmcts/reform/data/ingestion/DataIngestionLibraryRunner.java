@@ -79,7 +79,7 @@ public class DataIngestionLibraryRunner {
         log.info("{}:: Data Ingestion Library job run completed::", logComponentName);
     }
 
-    public Optional<Date> getFileTimestamp(String fileName) throws URISyntaxException, StorageException {
+    protected Optional<Date> getFileTimestamp(String fileName) throws URISyntaxException, StorageException {
         camelContext.getGlobalOptions()
             .put(SCHEDULER_START_TIME, String.valueOf(new Date().getTime()));
 
