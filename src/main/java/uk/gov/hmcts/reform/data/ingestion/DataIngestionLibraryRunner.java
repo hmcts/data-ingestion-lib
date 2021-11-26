@@ -61,7 +61,7 @@ public class DataIngestionLibraryRunner {
     private CloudStorageAccount cloudStorageAccount;
 
     @Value("${route.judicial-user-profile-orchestration.file-name:Personal}")
-    private String fileName;
+    protected String fileName;
 
     public void run(Job job, JobParameters params) throws Exception {
         Optional<Date> fileTimestamp = getFileTimestamp(fileName);
