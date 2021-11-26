@@ -69,8 +69,8 @@ public class AuditServiceImpl implements IAuditService {
     @Value("${archival-file-names}")
     List<String> archivalFileNames;
 
-    @Value("route.judicial-user-profile-orchestration.file-name: Personal")
-    protected String fileName;
+    @Value("${route.judicial-user-profile-orchestration.file-name:Personal}")
+    String fileName;
 
     /**
      * Capture and log scheduler details with file status.
@@ -164,7 +164,7 @@ public class AuditServiceImpl implements IAuditService {
             (ResultSet rs, int rowNum) -> {
                 Audit audit = new Audit();
                 audit.setFileName(rs.getString(DB_FILE_NAME));
-                audit.setSchedulerStartTime(new Date(rs.getDate(DB_SCHEDULER_START_TIME).getTime()));
+                audit.setSchedulerStartTime(new Date(rs.getTimestamp(DB_SCHEDULER_START_TIME).getTime()));
                 audit.setStatus(rs.getString(DB_STATUS));
                 return audit;
             });
