@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.data.ingestion;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.data.ingestion.camel.service.AuditServiceImpl;
 import uk.gov.hmcts.reform.data.ingestion.configuration.AzureBlobConfig;
 
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Optional;
 import java.util.function.BiPredicate;
@@ -40,7 +42,7 @@ public class DataIngestionLibraryRunner {
     JobLauncher jobLauncher;
 
     @Autowired
-    AuditServiceImpl auditServiceImpl;
+    protected AuditServiceImpl auditServiceImpl;
 
     @Value("${idempotent-flag-ingestion}")
     boolean isIdempotentFlagEnabled;
@@ -59,9 +61,25 @@ public class DataIngestionLibraryRunner {
     private CloudStorageAccount cloudStorageAccount;
 
     @Value("${route.judicial-user-profile-orchestration.file-name:Personal}")
-    private String fileName;
+    protected String fileName;
 
     public void run(Job job, JobParameters params) throws Exception {
+        Optional<Date> fileTimestamp = getFileTimestamp(fileName);
+
+        if (isIdempotentFlagEnabled
+                && ((isStartRouteJRD(params) && auditingCompletedTodayOrPrevDay(auditServiceImpl, fileTimestamp))
+                        || isAuditingCompleted.test(auditServiceImpl))) {
+
+            log.info("{}:: no run of Data Ingestion Library as it has ran for the day::", logComponentName);
+            return;
+        }
+
+        log.info("{}:: Data Ingestion Library starts::", logComponentName);
+        jobLauncher.run(job, params);
+        log.info("{}:: Data Ingestion Library job run completed::", logComponentName);
+    }
+
+    protected Optional<Date> getFileTimestamp(String fileName) throws URISyntaxException, StorageException {
         camelContext.getGlobalOptions()
             .put(SCHEDULER_START_TIME, String.valueOf(new Date().getTime()));
 
@@ -77,18 +95,7 @@ public class DataIngestionLibraryRunner {
             cloudBlockBlob.downloadAttributes();
             fileTimestamp = Optional.ofNullable(cloudBlockBlob.getProperties().getLastModified());
         }
-
-        if (isIdempotentFlagEnabled
-                && ((isStartRouteJRD(params) && auditingCompletedTodayOrPrevDay(auditServiceImpl, fileTimestamp))
-                        || isAuditingCompleted.test(auditServiceImpl))) {
-
-            log.info("{}:: no run of Data Ingestion Library as it has ran for the day::", logComponentName);
-            return;
-        }
-
-        log.info("{}:: Data Ingestion Library starts::", logComponentName);
-        jobLauncher.run(job, params);
-        log.info("{}:: Data Ingestion Library job run completed::", logComponentName);
+        return fileTimestamp;
     }
 
     private boolean isStartRouteJRD(JobParameters params) {

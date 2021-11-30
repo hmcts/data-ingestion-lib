@@ -142,7 +142,25 @@ public class AuditServiceImpl implements IAuditService {
     public boolean isAuditingCompletedPrevDay(Optional<Date> fileTimeStamp) {
         Predicate<Audit> failure = audit -> audit.getStatus().equals(FAILURE);
 
-        List<Audit> previousDayAudits = jdbcTemplate.query(prevDayAuditDetails,
+        return hasDataIngestionRunAfterFileUpload(fileTimeStamp)
+                && getPreviousDayAudits().stream().noneMatch(failure);
+    }
+
+    public boolean hasDataIngestionRunAfterFileUpload(Optional<Date> fileTimeStamp) {
+
+        Optional<Date> prevDaySchedulerStarTime = getPreviousDayAudits().stream()
+                .filter(audit -> audit.getFileName().equals(fileName))
+                .map(Audit::getSchedulerStartTime)
+                .findFirst();
+
+        return prevDaySchedulerStarTime
+                .map(date -> date.after(
+                        fileTimeStamp.orElseThrow(() -> new IllegalArgumentException("File Timestamp not found!"))))
+                .orElse(false);
+    }
+
+    private List<Audit> getPreviousDayAudits() {
+        return jdbcTemplate.query(prevDayAuditDetails,
             (ResultSet rs, int rowNum) -> {
                 Audit audit = new Audit();
                 audit.setFileName(rs.getString(DB_FILE_NAME));
@@ -150,16 +168,5 @@ public class AuditServiceImpl implements IAuditService {
                 audit.setStatus(rs.getString(DB_STATUS));
                 return audit;
             });
-
-        Optional<Date> prevDaySchedulerStarTime = previousDayAudits.stream()
-            .filter(audit -> audit.getFileName().equals(fileName))
-            .map(Audit::getSchedulerStartTime)
-            .findFirst();
-
-        return prevDaySchedulerStarTime
-            .map(date -> date.after(
-                    fileTimeStamp.orElseThrow(() -> new IllegalArgumentException("File Timestamp not found!")))
-                    && previousDayAudits.stream().noneMatch(failure))
-            .orElse(false);
     }
 }
