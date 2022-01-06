@@ -44,7 +44,7 @@ public class EmailServiceImpl implements IEmailService {
             emailDto.getTo().forEach(email ->
                 personalization.addTo(new com.sendgrid.helpers.mail.objects.Email(email))
             );
-            Content content = new Content("text/plain", emailDto.getMessageBody());
+            Content content = new Content(emailDto.getContentType(), emailDto.getMessageBody());
             Mail mail = new Mail();
             mail.setFrom(new com.sendgrid.helpers.mail.objects.Email(emailDto.getFrom()));
             mail.setSubject(emailDto.getSubject());
