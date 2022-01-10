@@ -55,8 +55,6 @@ public class EmailServiceImpl implements IEmailService {
             request.setEndpoint("mail/send");
             request.setBody(mail.build());
             final Response response = sendGrid.api(request);
-            log.info("{} response with status {} and body {}", logComponentName,
-                    response.getStatusCode(), request.getBody());
             return response.getStatusCode();
         } catch (IOException ex) {
             log.error("{}:: Exception  while  sending mail  {}", logComponentName, ex.getMessage());
