@@ -44,7 +44,7 @@ public class EmailServiceImpl implements IEmailService {
             emailDto.getTo().forEach(email ->
                 personalization.addTo(new com.sendgrid.helpers.mail.objects.Email(email))
             );
-            Content content = new Content("text/plain", emailDto.getMessageBody());
+            Content content = new Content(emailDto.getContentType(), emailDto.getMessageBody());
             Mail mail = new Mail();
             mail.setFrom(new com.sendgrid.helpers.mail.objects.Email(emailDto.getFrom()));
             mail.setSubject(emailDto.getSubject());
@@ -55,8 +55,6 @@ public class EmailServiceImpl implements IEmailService {
             request.setEndpoint("mail/send");
             request.setBody(mail.build());
             final Response response = sendGrid.api(request);
-            log.info("{} response with status {} and body {}", logComponentName,
-                    response.getStatusCode(), request.getBody());
             return response.getStatusCode();
         } catch (IOException ex) {
             log.error("{}:: Exception  while  sending mail  {}", logComponentName, ex.getMessage());

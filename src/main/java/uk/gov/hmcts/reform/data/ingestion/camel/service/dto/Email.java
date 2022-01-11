@@ -19,6 +19,8 @@ public class Email {
 
     private List<String> to;
 
+    private String contentType;
+
     private String messageBody;
 
     public void validate() {
