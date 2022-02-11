@@ -307,7 +307,7 @@ dependencies {
     api group: 'org.apache.camel', name: 'camel-spring-batch', version: versions.camel
 
 
-    implementation group: 'org.apache.camel.springboot', name: 'camel-azure-starter', version:versions.camel
+    api group: 'org.apache.camel.springboot', name: 'camel-azure-starter', version:versions.camel
     api group: 'org.apache.camel.springboot', name: 'camel-bindy-starter', version:versions.camel
     implementation group: 'org.apache.camel.springboot', name: 'camel-jdbc-starter', version:versions.camel
     implementation group: 'org.apache.camel', name: 'camel-bean-validator', version: versions.camel
