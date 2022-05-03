@@ -17,6 +17,7 @@ import static java.lang.Boolean.FALSE;
 import static java.util.Objects.nonNull;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.DataLoadUtil.getFileDetails;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.DataLoadUtil.registerFileStatusBean;
+import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.FAILURE;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.PARTIAL_SUCCESS;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ROUTE_DETAILS;
 
@@ -37,11 +38,13 @@ public abstract class JsrValidationBaseProcessor<T> implements Processor {
 
     private List<T> invalidRecords;
 
+    private List<T> validRecords;
+
     @Autowired
     protected ApplicationContext applicationContext;
 
     public List<T> validate(JsrValidatorInitializer<T> jsrValidatorInitializer, List<T> list) {
-        List<T> validRecords = jsrValidatorInitializer.validate(list);
+        validRecords = jsrValidatorInitializer.validate(list);
         invalidRecords = jsrValidatorInitializer.getInvalidJsrRecords();
         return jsrValidatorInitializer.validate(list);
     }
@@ -62,7 +65,11 @@ public abstract class JsrValidationBaseProcessor<T> implements Processor {
                 "Please check database table");
             //Auditing JSR exceptions in exception table
             jsrValidatorInitializer.auditJsrExceptions(exchange);
-            fileStatus.setAuditStatus(PARTIAL_SUCCESS);
+            if (validRecords.size() == 0) {
+                fileStatus.setAuditStatus(FAILURE);
+            } else {
+                fileStatus.setAuditStatus(PARTIAL_SUCCESS);
+            }
             registerFileStatusBean(applicationContext, routeProperties.getFileName(), fileStatus,
                 exchange.getContext());
         }
