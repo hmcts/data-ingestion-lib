@@ -9,6 +9,7 @@ compile group: 'uk.gov.hmcts.reform', name: 'data-ingestion-lib', version: '0.2.
 # To build the project in local execute the following command:
 ./gradlew build 
 
+
 # How to use library:
 Common library properties like email settings configured in library and customized properties should be configured with specific 
 microservices eg. rd-judicial-data-load (https://github.com/hmcts/rd-judicial-data-load)
