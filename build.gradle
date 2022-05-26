@@ -28,7 +28,6 @@ plugins {
     id "org.flywaydb.flyway" version "6.2.0"
     id 'maven-publish'
     id 'uk.gov.hmcts.java' version '0.12.0'
-    id 'org.springframework.boot' version '2.4.12'
 }
 
 apply plugin: 'java-library'
@@ -48,7 +47,7 @@ def versions = [
         springHystrix      : '2.1.1.RELEASE',
         springfoxSwagger   : '2.9.2',
         camel              : '3.8.0',
-        jackson            : '2.13.2.1',
+        jackson            : '2.13.2',
         log4j              : '2.17.1',
         springVersion      : '5.3.20'
 ]
@@ -301,10 +300,12 @@ dependencies {
     implementation group: 'org.springframework', name: 'spring-webmvc', version: versions.springVersion
 
     implementation group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '3.0.4'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.2.1'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: versions.jackson
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: versions.jackson
-    implementation group: 'com.fasterxml.jackson', name: 'jackson-bom', version: '2.13.2.20220324', ext: 'pom'
+    implementation (group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson) {
+        force = true
+    }
+    implementation (group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: versions.jackson) {
+        force = true
+    }
     implementation group: 'io.github.openfeign.form', name: 'feign-form', version: '3.8.0'
     implementation group: 'io.github.openfeign.form', name: 'feign-form-spring', version: '3.8.0'
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: versions.log4j
@@ -316,9 +317,7 @@ dependencies {
 
     implementation "com.github.hmcts.java-logging:logging:${versions.reformLogging}"
     implementation "com.github.hmcts.java-logging:logging-appinsights:${versions.reformLogging}"
-    implementation ('com.github.hmcts:rd-commons-lib:v0.0.13'){
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-web'
-    }
+    implementation 'com.github.hmcts:properties-volume-spring-boot-starter:0.1.0'
     implementation 'com.github.hmcts:service-auth-provider-java-client:4.0.3'
     implementation 'net.logstash.logback:logstash-logback-encoder:6.4'
 
