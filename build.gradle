@@ -326,6 +326,8 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-vfs2', version: '2.4.1'
     implementation group: 'com.jcraft', name: 'jsch', version: '0.1.55'
 
+    implementation 'commons-io:commons-io:2.8.0'
+
     api group: 'org.apache.camel.springboot', name: 'camel-spring-boot-starter', version:versions.camel
     implementation group: 'org.apache.camel', name: 'camel-csv', version: versions.camel
     implementation group: 'org.apache.camel', name: 'camel-sql', version: versions.camel
