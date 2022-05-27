@@ -387,8 +387,6 @@ dependencies {
     integrationTestImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.12.5'
     integrationTestImplementation group: 'org.postgresql', name: 'postgresql', version: '42.3.3'
 
-    implementation 'commons-io:commons-io:2.11.0'
-
     testImplementation(group: 'org.yaml', name: 'snakeyaml', version: '1.23') {
         force = true
     }
