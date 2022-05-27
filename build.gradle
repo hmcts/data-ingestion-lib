@@ -305,10 +305,9 @@ dependencies {
     implementation (group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: versions.jackson) {
         force = true
     }
-//    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
-//    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: versions.jackson
-//    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.2.1'
-//    implementation group: 'com.fasterxml.jackson', name: 'jackson-bom', version: '2.13.2.20220324', ext: 'pom'
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: versions.jackson
+    implementation group: 'com.fasterxml.jackson', name: 'jackson-bom', version: '2.13.2.20220324', ext: 'pom'
 
     implementation group: 'io.github.openfeign.form', name: 'feign-form', version: '3.8.0'
     implementation group: 'io.github.openfeign.form', name: 'feign-form-spring', version: '3.8.0'
