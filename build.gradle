@@ -276,11 +276,17 @@ repositories {
 
 dependencies {
     api group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json', version: versions.springBoot
+    implementation (group: 'org.springframework.boot', name: 'spring-boot-starter-json', version: versions.springBoot) {
+        exclude group: 'org.glassfish', module: 'jakarta.el'
+    }
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc'
 
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-cache', version: versions.springBoot
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: versions.springBoot
+    implementation (group: 'org.springframework.boot', name: 'spring-boot-starter-cache', version: versions.springBoot){
+        exclude group: 'org.glassfish', module: 'jakarta.el'
+    }
+    implementation (group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: versions.springBoot) {
+        exclude group: 'org.glassfish', module: 'jakarta.el'
+    }
 
     api group: 'org.springframework.boot', name: 'spring-boot-starter-batch', version: versions.springBoot
 
