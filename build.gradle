@@ -48,7 +48,8 @@ def versions = [
         springfoxSwagger   : '2.9.2',
         camel              : '3.8.0',
         jackson            : '2.13.1',
-        springVersion      : '5.3.20'
+        springVersion      : '5.3.20',
+        log4j              : '2.17.1'
 ]
 
 mainClassName = 'uk.gov.hmcts.reform.*'
@@ -316,14 +317,24 @@ dependencies {
     implementation group: 'com.fasterxml.jackson', name: 'jackson-bom', version: '2.13.2.20220324', ext: 'pom'
 
     implementation group: 'io.github.openfeign.form', name: 'feign-form', version: '3.8.0'
-    implementation group: 'io.github.openfeign.form', name: 'feign-form-spring', version: '3.8.0'
+    implementation (group: 'io.github.openfeign.form', name: 'feign-form-spring', version: '3.8.0') {
+        exclude group: 'commons-io', module: 'commons-io'
+    }
 
     implementation group: 'com.sun.xml.bind', name: 'jaxb-osgi', version: '2.3.3'
 
     implementation "com.github.hmcts.java-logging:logging:${versions.reformLogging}"
     implementation "com.github.hmcts.java-logging:logging-appinsights:${versions.reformLogging}"
-    implementation 'com.github.hmcts:properties-volume-spring-boot-starter:0.1.0'
-    implementation 'com.github.hmcts:service-auth-provider-java-client:4.0.3'
+    implementation ('com.github.hmcts:properties-volume-spring-boot-starter:0.1.0') {
+        exclude group: 'org.glassfish', module: 'jakarta.el'
+        exclude group: 'org.springframework.security', module: 'spring-security-crypto'
+        exclude group: 'org.apache.tomcat.embed', module: 'tomcat-embed-core'
+        exclude group: 'org.apache.tomcat.embed', module: 'tomcat-embed-websocket'
+    }
+    implementation ('com.github.hmcts:service-auth-provider-java-client:4.0.3') {
+        exclude group: 'org.springframework.security', module: 'spring-security-crypto'
+        exclude group: 'org.springframework.cloud', module: 'spring-cloud-openfeign-core'
+    }
     implementation 'net.logstash.logback:logstash-logback-encoder:6.4'
 
     implementation group: 'com.microsoft.azure', name: 'azure-storage-blob', version: '11.0.0'
@@ -352,6 +363,14 @@ dependencies {
 
     implementation group: 'org.apache.camel', name: 'camel-core', version: versions.camel
     implementation group: 'org.apache.camel', name: 'spi-annotations', version: '3.4.1'
+
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: versions.log4j
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: versions.log4j
+    implementation group: 'org.apache.logging.log4j', name: 'log4j', version: versions.log4j
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: versions.log4j
+
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.10'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.10'
 
     implementation group: 'com.opencsv', name: 'opencsv', version: '3.7'
     api group: 'commons-lang', name: 'commons-lang', version: '2.6'
