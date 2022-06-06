@@ -327,14 +327,13 @@ dependencies {
     implementation "com.github.hmcts.java-logging:logging-appinsights:${versions.reformLogging}"
     implementation ('com.github.hmcts:properties-volume-spring-boot-starter:0.1.0') {
         exclude group: 'org.glassfish', module: 'jakarta.el'
-        exclude group: 'org.springframework.security', module: 'spring-security-crypto'
         exclude group: 'org.apache.tomcat.embed', module: 'tomcat-embed-core'
         exclude group: 'org.apache.tomcat.embed', module: 'tomcat-embed-websocket'
     }
     implementation ('com.github.hmcts:service-auth-provider-java-client:4.0.3') {
-        exclude group: 'org.springframework.security', module: 'spring-security-crypto'
         exclude group: 'org.springframework.cloud', module: 'spring-cloud-openfeign-core'
     }
+    implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.1'
     implementation 'net.logstash.logback:logstash-logback-encoder:6.4'
 
     implementation group: 'com.microsoft.azure', name: 'azure-storage-blob', version: '11.0.0'
