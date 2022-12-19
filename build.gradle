@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '2.4.9'
+        springBootVersion = '3.0.0'
     }
     repositories {
         mavenLocal()
@@ -43,11 +43,11 @@ def versions = [
         reformLogging      : '5.1.9',
         serenity           : '2.0.23',
         sonarPitest        : '0.5',
-        springBoot         : '2.4.9',
+        springBoot         : '3.0.0',
         springHystrix      : '2.1.1.RELEASE',
         springfoxSwagger   : '2.9.2',
         camel              : '3.8.0',
-        jackson            : '2.13.1',
+        jackson            : '2.14.1',
         springVersion      : '5.3.20',
         log4j              : '2.17.1'
 ]
@@ -305,7 +305,7 @@ dependencies {
     implementation group: 'org.springframework', name: 'spring-web', version: versions.springVersion
     implementation group: 'org.springframework', name: 'spring-webmvc', version: versions.springVersion
 
-    implementation group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '3.0.4'
+    implementation group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '3.1.2'
     implementation (group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.2.1') {
         force = true
     }
@@ -339,7 +339,7 @@ dependencies {
     implementation group: 'com.microsoft.azure', name: 'azure-storage-blob', version: '11.0.0'
 
     implementation group: 'org.flywaydb', name: 'flyway-core', version: '5.2.4'
-    implementation group: 'org.postgresql', name: 'postgresql', version: '42.3.3'
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.5.1'
 
     implementation group: 'com.google.guava', name: 'guava', version: '30.1-jre'
 
@@ -387,7 +387,7 @@ dependencies {
     smokeTestCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
     smokeTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
-    testImplementation (group: 'io.rest-assured', name: 'rest-assured', version: '4.3.1') {
+    testImplementation (group: 'io.rest-assured', name: 'rest-assured', version: '5.3.0') {
         exclude group: "com.sun.xml.bind", module: "jaxb-osgi"
     }
     testImplementation("org.hamcrest:hamcrest-junit:2.0.0.0") {
@@ -417,15 +417,15 @@ dependencies {
     integrationTestImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.12.5'
     integrationTestImplementation group: 'org.postgresql', name: 'postgresql', version: '42.3.3'
 
-    testImplementation(group: 'org.yaml', name: 'snakeyaml', version: '1.23') {
+    testImplementation(group: 'org.yaml', name: 'snakeyaml', version: '1.31') {
         force = true
     }
 
-    integrationTestImplementation(group: 'org.yaml', name: 'snakeyaml', version: '1.23') {
+    integrationTestImplementation(group: 'org.yaml', name: 'snakeyaml', version: '1.31') {
         force = true
     }
 
-    functionalTestImplementation(group: 'org.yaml', name: 'snakeyaml', version: '1.23') {
+    functionalTestImplementation(group: 'org.yaml', name: 'snakeyaml', version: '1.31') {
         force = true
     }
 
