@@ -377,7 +377,6 @@ dependencies {
     implementation 'com.sendgrid:sendgrid-java:4.7.2'
 
     implementation group: 'org.springframework.cloud', name: 'spring-cloud-config-server', version: '3.1.5'
-    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-bootstrap', version: '3.0.0'
 
     compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
