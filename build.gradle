@@ -15,6 +15,7 @@ buildscript {
     }
 }
 
+
 plugins {
     id 'application'
     id 'checkstyle'
@@ -51,6 +52,7 @@ def versions = [
         springVersion      : '5.3.20',
         log4j              : '2.17.1'
 ]
+
 
 mainClassName = 'uk.gov.hmcts.reform.*'
 def jarName = 'data-ingestion-lib.jar'
