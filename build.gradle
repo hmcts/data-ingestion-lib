@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '2.4.9'
+        springBootVersion = '2.7.7'
     }
     repositories {
         mavenLocal()
@@ -14,6 +14,7 @@ buildscript {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
 }
+
 
 plugins {
     id 'application'
@@ -43,7 +44,7 @@ def versions = [
         reformLogging      : '5.1.9',
         serenity           : '2.0.23',
         sonarPitest        : '0.5',
-        springBoot         : '2.4.9',
+        springBoot         : '2.7.7',
         springHystrix      : '2.1.1.RELEASE',
         springfoxSwagger   : '2.9.2',
         camel              : '3.8.0',
@@ -51,6 +52,7 @@ def versions = [
         springVersion      : '5.3.20',
         log4j              : '2.17.1'
 ]
+
 
 mainClassName = 'uk.gov.hmcts.reform.*'
 def jarName = 'data-ingestion-lib.jar'
@@ -371,6 +373,8 @@ dependencies {
     implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.10'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.10'
 
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-config-server', version: '3.1.5'
+
     implementation group: 'com.opencsv', name: 'opencsv', version: '3.7'
     api group: 'commons-lang', name: 'commons-lang', version: '2.6'
     api group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
@@ -463,11 +467,12 @@ bootJar {
     enabled = false
 }
 
-jar {
+
+tasks.jar {
     enabled = true
+    // Remove `plain` postfix from jar file name
+    archiveClassifier.set("")
 }
-
-
 // this is required to force Java running on the Azure Windows Server OS into using
 // UTF-8 as the default character set instead of windows-1252 which causes issues.
 // this setting only applies when running via gradle bootRun -- see web.config for the
