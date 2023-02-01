@@ -340,6 +340,10 @@ dependencies {
 
     implementation group: 'com.microsoft.azure', name: 'azure-storage-blob', version: '11.0.0'
 
+
+    implementation group: 'org.springframework.security', name: 'spring-security-core', version: '5.7.5'
+    implementation group: 'org.bouncycastle', name: 'bcpkix-jdk18on', version: '1.72'
+
     implementation group: 'org.flywaydb', name: 'flyway-core', version: '5.2.4'
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.3.3'
 
