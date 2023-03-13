@@ -11,9 +11,11 @@ import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
 
+import java.io.InputStream;
 import java.util.HashMap;
 
 import static org.apache.camel.spring.util.ReflectionUtils.setField;
+import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -47,7 +49,11 @@ public class ImprovedHeaderValidationProcessorTest {
     @Test
     public void testProcess() {
         setRouteProperties("true");
-        when(exchangeMock.getIn().getBody(String.class)).thenReturn("field1,field2");
+
+        String msgBody = "field1,field2";
+        InputStream inputStream = toInputStream(msgBody, "UTF-8");
+        when(exchangeMock.getIn().getBody(InputStream.class)).thenReturn(inputStream);
+
         when(exchangeMock.getMessage()).thenReturn(messageMock);
         headerValidationProcessor.process(exchangeMock);
         verify(headerValidationProcessor).process(exchangeMock);
@@ -57,7 +63,11 @@ public class ImprovedHeaderValidationProcessorTest {
     @Test
     public void testProcess_CaseSensitivityCheck() {
         setRouteProperties("true");
-        when(exchangeMock.getIn().getBody(String.class)).thenReturn("Field1,FIELD2");
+
+        String msgBody = "Field1,FIELD2";
+        InputStream inputStream = toInputStream(msgBody, "UTF-8");
+        when(exchangeMock.getIn().getBody(InputStream.class)).thenReturn(inputStream);
+
         when(exchangeMock.getMessage()).thenReturn(messageMock);
         headerValidationProcessor.process(exchangeMock);
         verify(headerValidationProcessor).process(exchangeMock);
@@ -68,7 +78,11 @@ public class ImprovedHeaderValidationProcessorTest {
     @Test
     public void testProcessException_WhenHeaderValidationToggledOn() {
         setRouteProperties("true");
-        when(exchangeMock.getIn().getBody(String.class)).thenReturn("field1,field2,field3");
+
+        String msgBody = "field1,field2,field3";
+        InputStream inputStream = toInputStream(msgBody, "UTF-8");
+        when(exchangeMock.getIn().getBody(InputStream.class)).thenReturn(inputStream);
+
         when(exchangeMock.getMessage()).thenReturn(messageMock);
         when(camelContext.getGlobalOptions()).thenReturn(new HashMap<>());
         assertThrows(RouteFailedException.class, () -> headerValidationProcessor.process(exchangeMock));
@@ -79,7 +93,11 @@ public class ImprovedHeaderValidationProcessorTest {
     @Test
     public void testProcessException_WhenHeaderValidationToggledOff() {
         setRouteProperties("false");
-        when(exchangeMock.getIn().getBody(String.class)).thenReturn("field1,field2,field3");
+
+        String msgBody = "field1,field2,field3";
+        InputStream inputStream = toInputStream(msgBody, "UTF-8");
+        when(exchangeMock.getIn().getBody(InputStream.class)).thenReturn(inputStream);
+
         when(exchangeMock.getMessage()).thenReturn(messageMock);
         when(camelContext.getGlobalOptions()).thenReturn(new HashMap<>());
         assertThrows(RouteFailedException.class, () -> headerValidationProcessor.process(exchangeMock));
@@ -90,7 +108,11 @@ public class ImprovedHeaderValidationProcessorTest {
     @Test
     public void testProcessException_JumbledOrder() {
         setRouteProperties("true");
-        when(exchangeMock.getIn().getBody(String.class)).thenReturn("field2,field1");
+
+        String msgBody = "field2,field1";
+        InputStream inputStream = toInputStream(msgBody, "UTF-8");
+        when(exchangeMock.getIn().getBody(InputStream.class)).thenReturn(inputStream);
+
         when(exchangeMock.getMessage()).thenReturn(messageMock);
         when(camelContext.getGlobalOptions()).thenReturn(new HashMap<>());
         assertThrows(RouteFailedException.class, () -> headerValidationProcessor.process(exchangeMock));
@@ -101,7 +123,11 @@ public class ImprovedHeaderValidationProcessorTest {
     @Test
     public void testProcess_NoException_HeadersJumbledOrder_WhenHeaderValidationToggledOff() {
         setRouteProperties("false");
-        when(exchangeMock.getIn().getBody(String.class)).thenReturn("field2,field1");
+
+        String msgBody = "field2,field1";
+        InputStream inputStream = toInputStream(msgBody, "UTF-8");
+        when(exchangeMock.getIn().getBody(InputStream.class)).thenReturn(inputStream);
+
         when(exchangeMock.getMessage()).thenReturn(messageMock);
         when(camelContext.getGlobalOptions()).thenReturn(new HashMap<>());
         headerValidationProcessor.process(exchangeMock);

@@ -4,6 +4,8 @@ import com.opencsv.CSVReader;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.BOMInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -44,7 +46,12 @@ public class HeaderValidationProcessor implements Processor {
     public void process(Exchange exchange) throws Exception {
 
         RouteProperties routeProperties = (RouteProperties) exchange.getIn().getHeader(MappingConstants.ROUTE_DETAILS);
-        String csv = exchange.getIn().getBody(String.class);
+        InputStream csvInputStream = exchange.getIn().getBody(InputStream.class);
+
+        BOMInputStream bomInputStream = new BOMInputStream(csvInputStream);
+
+        String csv = IOUtils.toString(bomInputStream, "UTF-8");
+
         CSVReader reader = new CSVReader(new StringReader(csv));
         String[] actualCsvHeaders = reader.readNext();
         String isHeaderValidationEnabled = routeProperties.getIsHeaderValidationEnabled();
