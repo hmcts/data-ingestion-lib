@@ -6,14 +6,18 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants;
 
+import java.io.InputStream;
 import java.util.HashMap;
 
 import static org.apache.camel.spring.util.ReflectionUtils.setField;
+import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -44,7 +48,11 @@ public class HeaderValidationProcessorTest {
     @SneakyThrows
     @Test
     public void testProcess() {
-        when(exchangeMock.getIn().getBody(String.class)).thenReturn("field");
+
+        String msgBody = "filed1";
+        InputStream inputStream = toInputStream(msgBody, "UTF-8");
+        when(exchangeMock.getIn().getBody(InputStream.class)).thenReturn(inputStream);
+
         when(exchangeMock.getMessage()).thenReturn(messageMock);
         when(applicationContextMock.getBean(routePropertiesMock.getBinder())).thenReturn(BinderObject.class);
         headerValidationProcessor.process(exchangeMock);
@@ -55,12 +63,45 @@ public class HeaderValidationProcessorTest {
     @Test
     public void testProcessException() {
 
-        when(exchangeMock.getIn().getBody(String.class)).thenReturn("filed1,field2");
+        String msgBody = "filed1,field2";
+        InputStream inputStream = toInputStream(msgBody, "UTF-8");
+        when(exchangeMock.getIn().getBody(InputStream.class)).thenReturn(inputStream);
+
         when(exchangeMock.getMessage()).thenReturn(messageMock);
         when(camelContext.getGlobalOptions()).thenReturn(new HashMap<>());
         BinderObject binderObject = new BinderObject();
         when(applicationContextMock.getBean(routePropertiesMock.getBinder())).thenReturn(binderObject);
         assertThrows(RouteFailedException.class, () -> headerValidationProcessor.process(exchangeMock));
+        verify(headerValidationProcessor).process(exchangeMock);
+    }
+
+    @SneakyThrows
+    @Test
+    public void testProcessHeaders() {
+
+        String cvsHeaderExpected = "ePIMS_ID,Site_Name,Court_Name,Court_Status,Court_Open_Date";
+
+        RouteProperties routePropertiesMock = mock(RouteProperties.class);
+        ReflectionTestUtils.setField(routePropertiesMock,"isHeaderValidationEnabled","true");
+        ReflectionTestUtils.setField(routePropertiesMock,"csvHeadersExpected",cvsHeaderExpected);
+
+        RouteProperties routePropertiesSpy =  Mockito.spy(routePropertiesMock);
+
+
+        when(exchangeMock.getIn().getHeader(MappingConstants.ROUTE_DETAILS)).thenReturn(routePropertiesSpy);
+
+        String msgBody = "\ufeffePIMS_ID,Site_Name,Court_Name,Court_Status,Court_Open_Date";
+
+
+        InputStream inputStream = toInputStream(msgBody, "UTF-8");
+
+        when(exchangeMock.getIn().getBody(InputStream.class)).thenReturn(inputStream);
+        when(exchangeMock.getMessage()).thenReturn(messageMock);
+        when(camelContext.getGlobalOptions()).thenReturn(new HashMap<>());
+        BinderObject binderObject = new BinderObject();
+        when(applicationContextMock.getBean(routePropertiesSpy.getBinder())).thenReturn(binderObject);
+        headerValidationProcessor.process(exchangeMock);
+
         verify(headerValidationProcessor).process(exchangeMock);
     }
 }
