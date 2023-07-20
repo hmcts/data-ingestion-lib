@@ -479,6 +479,10 @@ tasks.jar {
 // java flag that configures the deployed applications
 applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 
+tasks.named("bootDistZip").configure { dependsOn("jar")}
+tasks.named("bootDistTar").configure { dependsOn("jar")}
+tasks.named("bootStartScripts").configure { dependsOn("jar")}
+
 test {
     useJUnitPlatform()
 }
