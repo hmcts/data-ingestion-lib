@@ -158,14 +158,14 @@ idea {
 
 // Fix for CVE-2021-21295 & need to be removed with new Azure blob version
 configurations.all {
-    resolutionStrategy.eachDependency { details ->
-        if (details.requested.group == 'io.netty') {
-            details.useVersion "4.1.77.Final"
-        }
-        if (details.requested.group == 'com.ibm.icu') {
-            details.useVersion "66.1"
-        }
-    }
+//    resolutionStrategy.eachDependency { details ->
+//        if (details.requested.group == 'io.netty') {
+//            details.useVersion "4.1.77.Final"
+//        }
+//        if (details.requested.group == 'com.ibm.icu') {
+//            details.useVersion "66.1"
+//        }
+//    }
 
     exclude group: 'org.apache.groovy', module: 'groovy'
     exclude group: 'org.apache.groovy', module: 'groovy-xml'
@@ -361,7 +361,8 @@ dependencies {
     api group: 'org.apache.camel', name: 'camel-spring-batch', version: versions.camel
 
 
-    api group: 'org.apache.camel.springboot', name: 'camel-azure-starter', version:versions.camel
+    api group: 'org.apache.camel.springboot', name: 'camel-azure-storage-blob-starter', version:versions.camel
+    // api group: 'org.apache.camel.springboot', name: 'camel-azure-storage-queue-starter', version:versions.camel
     api group: 'org.apache.camel.springboot', name: 'camel-bindy-starter', version:versions.camel
     implementation group: 'org.apache.camel.springboot', name: 'camel-jdbc-starter', version:versions.camel
     implementation group: 'org.apache.camel', name: 'camel-bean-validator', version: versions.camel
@@ -419,13 +420,13 @@ dependencies {
     testImplementation 'org.codehaus.sonar-plugins:sonar-pitest-plugin:0.5'
 
 
-    testImplementation group: 'org.apache.camel', name: 'camel-test-spring', version: versions.camel
-    testImplementation group: 'org.apache.camel', name: 'camel-test', version: versions.camel
+    testImplementation group: 'org.apache.camel', name: 'camel-test-spring-junit5', version: versions.camel
+    testImplementation group: 'org.apache.camel', name: 'camel-test-junit5', version: versions.camel
     testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.12.5'
     testImplementation group: 'org.postgresql', name: 'postgresql', version: '42.3.3'
 
-    integrationTestImplementation group: 'org.apache.camel', name: 'camel-test-spring', version: versions.camel
-    integrationTestImplementation group: 'org.apache.camel', name: 'camel-test', version: versions.camel
+    integrationTestImplementation group: 'org.apache.camel', name: 'camel-test-spring-junit5', version: versions.camel
+    integrationTestImplementation group: 'org.apache.camel', name: 'camel-test-junit5', version: versions.camel
     integrationTestImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.12.5'
     integrationTestImplementation group: 'org.postgresql', name: 'postgresql', version: '42.3.3'
 

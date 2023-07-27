@@ -1,15 +1,16 @@
 package uk.gov.hmcts.reform.data.ingestion.camel;
 
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.blob.BlobProperties;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.models.BlobProperties;
 import org.apache.camel.CamelContext;
+import org.apache.camel.spi.Registry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -19,12 +20,13 @@ import uk.gov.hmcts.reform.data.ingestion.DataIngestionLibraryRunner;
 import uk.gov.hmcts.reform.data.ingestion.camel.service.AuditServiceImpl;
 import uk.gov.hmcts.reform.data.ingestion.configuration.AzureBlobConfig;
 
-import java.util.Date;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.util.Base64;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.DIRECT_JRD;
@@ -45,19 +47,16 @@ class DataIngestionLibraryRunnerTest {
     CamelContext camelContext;
 
     @Mock
-    CloudStorageAccount cloudStorageAccount;
-
-    @Mock
     AzureBlobConfig azureBlobConfig;
 
     @Mock
-    CloudBlobClient blobClient;
+    BlobServiceClient blobClient;
 
     @Mock
-    CloudBlobContainer container;
+    BlobContainerClient container;
 
     @Mock
-    CloudBlockBlob cloudBlockBlob;
+    BlobClient cloudBlockBlob;
 
     @Mock
     BlobProperties blobProperties;
@@ -68,12 +67,16 @@ class DataIngestionLibraryRunnerTest {
     @BeforeEach
     void setUp() throws Exception {
         openMocks(this);
-        when(cloudStorageAccount.createCloudBlobClient()).thenReturn(blobClient);
+        Mockito.when(camelContext.getRegistry()).thenReturn(mock(Registry.class));
         when(azureBlobConfig.getContainerName()).thenReturn("test");
-        when(blobClient.getContainerReference(anyString())).thenReturn(container);
-        when(container.getBlockBlobReference(any())).thenReturn(cloudBlockBlob);
+        when(azureBlobConfig.getAccountName()).thenReturn("test-account-name");
+        when(azureBlobConfig.getAccountKey()).thenReturn(
+                new String(Base64.getEncoder().encode("test-account-key".getBytes())));
+        when(blobClient.getBlobContainerClient(anyString())).thenReturn(container);
+        when(container.getBlobClient(any())).thenReturn(cloudBlockBlob);
         when(cloudBlockBlob.getProperties()).thenReturn(blobProperties);
-        when(blobProperties.getLastModified()).thenReturn(new Date());
+        when(cloudBlockBlob.exists()).thenReturn(true);
+        when(blobProperties.getLastModified()).thenReturn(OffsetDateTime.now());
     }
 
     @Test

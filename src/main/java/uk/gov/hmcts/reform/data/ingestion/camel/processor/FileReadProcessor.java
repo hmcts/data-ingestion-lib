@@ -1,9 +1,10 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.processor;
 
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.common.StorageSharedKeyCredential;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
@@ -12,7 +13,6 @@ import org.apache.camel.Processor;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.data.ingestion.camel.service.AuditServiceImpl;
 import uk.gov.hmcts.reform.data.ingestion.camel.util.BlobStatus;
 import uk.gov.hmcts.reform.data.ingestion.configuration.AzureBlobConfig;
 
+import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.function.BiPredicate;
 
@@ -66,9 +67,7 @@ public class FileReadProcessor implements Processor {
 
     private Date fileTimeStamp;
 
-    @Autowired
-    @Qualifier("credscloudStorageAccount")
-    private CloudStorageAccount cloudStorageAccount;
+    private BlobServiceClient blobClient;
 
     /**
      * Consumes files only if it is not Stale and stores it in message body.
@@ -80,6 +79,17 @@ public class FileReadProcessor implements Processor {
         log.info("{}:: FileReadProcessor starts::", logComponentName);
         final String blobFilePath = (String) exchange.getProperty(BLOBPATH);
         final CamelContext context = exchange.getContext();
+
+        StorageSharedKeyCredential credential = new StorageSharedKeyCredential(
+                azureBlobConfig.getAccountName(), azureBlobConfig.getAccountKey());
+        String uri = String.format("https://%s.blob.core.windows.net", azureBlobConfig.getAccountName());
+
+        blobClient = new BlobServiceClientBuilder()
+                .endpoint(uri)
+                .credential(credential)
+                .buildClient();
+        context.getRegistry().bind("client", blobClient);
+
         final ConsumerTemplate consumer = context.createConsumerTemplate();
         RouteProperties routeProperties = (RouteProperties) exchange.getIn().getHeader(ROUTE_DETAILS);
         String fileName = routeProperties.getFileName();
@@ -109,12 +119,10 @@ public class FileReadProcessor implements Processor {
      */
     private BlobStatus getFileStatusInBlobContainer(RouteProperties routeProperties, String schedulerTime) {
         try {
+            BlobContainerClient blobContainerClient = blobClient.getBlobContainerClient(
+                    azureBlobConfig.getContainerName());
 
-            CloudBlobClient blobClient = cloudStorageAccount.createCloudBlobClient();
-            CloudBlobContainer container =
-                blobClient.getContainerReference(azureBlobConfig.getContainerName());
-
-            CloudBlockBlob cloudBlockBlob = container.getBlockBlobReference(routeProperties.getFileName());
+            BlobClient cloudBlockBlob = blobContainerClient.getBlobClient(routeProperties.getFileName());
 
             //if scheduler time not set via camel context then set as current date else camel context pass current
             // data time
@@ -123,8 +131,8 @@ public class FileReadProcessor implements Processor {
             }
 
             if (cloudBlockBlob.exists()) {
-                cloudBlockBlob.downloadAttributes();
-                fileTimeStamp = cloudBlockBlob.getProperties().getLastModified();
+                OffsetDateTime lastModified = cloudBlockBlob.getProperties().getLastModified();
+                fileTimeStamp = new Date(lastModified.toInstant().toEpochMilli());
 
                 BlobStatus blobStatus;
                 Date today = new Date(Long.parseLong(schedulerTime));

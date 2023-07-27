@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.util;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,6 +10,8 @@ import org.springframework.test.context.ContextConfiguration;
 import uk.gov.hmcts.reform.data.ingestion.camel.helper.JrdTestSupport;
 
 import java.sql.Timestamp;
+
+import static org.junit.Assert.assertNotNull;
 
 @SpringBootTest
 @Configuration()
