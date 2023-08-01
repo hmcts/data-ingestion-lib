@@ -56,6 +56,9 @@ public class DataIngestionLibraryRunner {
     @Autowired
     private AzureBlobConfig azureBlobConfig;
 
+    @Autowired
+    private BlobServiceClientBuilder blobServiceClientBuilder;
+
     @Value("${route.judicial-user-profile-orchestration.file-name:Personal}")
     protected String fileName;
 
@@ -83,7 +86,7 @@ public class DataIngestionLibraryRunner {
                 azureBlobConfig.getAccountName(), azureBlobConfig.getAccountKey());
         String uri = String.format("https://%s.blob.core.windows.net", azureBlobConfig.getAccountName());
 
-        BlobServiceClient blobClient = new BlobServiceClientBuilder()
+        BlobServiceClient blobClient = blobServiceClientBuilder
                 .endpoint(uri)
                 .credential(credential)
                 .buildClient();

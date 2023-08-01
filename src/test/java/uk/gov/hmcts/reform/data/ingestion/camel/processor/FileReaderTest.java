@@ -3,7 +3,9 @@ package uk.gov.hmcts.reform.data.ingestion.camel.processor;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.BlobProperties;
+import com.azure.storage.common.StorageSharedKeyCredential;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
@@ -12,6 +14,8 @@ import org.apache.camel.Message;
 import org.apache.camel.spi.Registry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.powermock.api.mockito.PowerMockito;
 import uk.gov.hmcts.reform.data.ingestion.camel.exception.RouteFailedException;
 import uk.gov.hmcts.reform.data.ingestion.camel.route.beans.RouteProperties;
 import uk.gov.hmcts.reform.data.ingestion.camel.service.AuditServiceImpl;
@@ -32,6 +36,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.ROUTE_DETAILS;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.BLOBPATH;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.SCHEDULER_START_TIME;
@@ -39,22 +44,32 @@ import static uk.gov.hmcts.reform.data.ingestion.camel.util.MappingConstants.MIL
 
 public class FileReaderTest {
 
-    Exchange exchangeMock = mock(Exchange.class);
-    Message messageMock = mock(Message.class);
-    RouteProperties routePropertiesMock = mock(RouteProperties.class);
-    CamelContext camelContext = mock(CamelContext.class);
+    @Mock
+    Exchange exchangeMock;
+    @Mock
+    Message messageMock;
+    @Mock
+    RouteProperties routePropertiesMock;
+    @Mock
+    CamelContext camelContext;
     FileReadProcessor fileReadProcessor = spy(new FileReadProcessor());
-    AzureBlobConfig azureBlobConfig = mock(AzureBlobConfig.class);
-    BlobServiceClient blobClient = mock(BlobServiceClient.class);
-    BlobContainerClient container = mock(BlobContainerClient.class);
-    BlobClient cloudBlockBlob = mock(BlobClient.class);
-    BlobProperties blobProperties = mock(BlobProperties.class);
-    AuditServiceImpl auditService = mock(AuditServiceImpl.class);
-    ConsumerTemplate consumerTemplate = mock(ConsumerTemplate.class);
+    @Mock
+    AzureBlobConfig azureBlobConfig;
+    BlobServiceClient blobClient = PowerMockito.mock(BlobServiceClient.class);
+    BlobContainerClient container = PowerMockito.mock(BlobContainerClient.class);
+    @Mock
+    BlobClient cloudBlockBlob;
+    BlobProperties blobProperties = PowerMockito.mock(BlobProperties.class);
+    @Mock
+    AuditServiceImpl auditService;
+    @Mock
+    ConsumerTemplate consumerTemplate;
 
 
     @BeforeEach
     public void setUp() throws Exception {
+        openMocks(this);
+
         when(exchangeMock.getIn()).thenReturn(messageMock);
         when(exchangeMock.getIn().getHeader(ROUTE_DETAILS)).thenReturn(routePropertiesMock);
         when(exchangeMock.getProperty(BLOBPATH)).thenReturn("blobpath");
@@ -77,6 +92,13 @@ public class FileReaderTest {
         when(container.getBlobClient(any())).thenReturn(cloudBlockBlob);
         when(exchangeMock.getContext().createConsumerTemplate()).thenReturn(consumerTemplate);
         when(camelContext.getGlobalOption(SCHEDULER_START_TIME)).thenReturn(String.valueOf(new Date().getTime()));
+
+        BlobServiceClientBuilder mockBuilder = PowerMockito.mock(BlobServiceClientBuilder.class);
+        when(mockBuilder.endpoint(anyString())).thenReturn(mockBuilder);
+        when(mockBuilder.credential(any(StorageSharedKeyCredential.class))).thenReturn(mockBuilder);
+        when(mockBuilder.buildClient()).thenReturn(blobClient);
+        setField(fileReadProcessor.getClass()
+                .getDeclaredField("blobServiceClientBuilder"), fileReadProcessor, mockBuilder);
     }
 
     @Test

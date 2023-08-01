@@ -3,7 +3,9 @@ package uk.gov.hmcts.reform.data.ingestion.camel;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.BlobProperties;
+import com.azure.storage.common.StorageSharedKeyCredential;
 import org.apache.camel.CamelContext;
 import org.apache.camel.spi.Registry;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -23,6 +26,7 @@ import uk.gov.hmcts.reform.data.ingestion.configuration.AzureBlobConfig;
 import java.time.OffsetDateTime;
 import java.util.Base64;
 
+import static org.apache.camel.spring.util.ReflectionUtils.setField;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -78,6 +82,13 @@ class DataIngestionLibraryRunnerTest {
         when(cloudBlockBlob.getProperties()).thenReturn(blobProperties);
         when(cloudBlockBlob.exists()).thenReturn(true);
         when(blobProperties.getLastModified()).thenReturn(OffsetDateTime.now());
+
+        BlobServiceClientBuilder mockBuilder = PowerMockito.mock(BlobServiceClientBuilder.class);
+        Mockito.when(mockBuilder.endpoint(anyString())).thenReturn(mockBuilder);
+        Mockito.when(mockBuilder.credential(any(StorageSharedKeyCredential.class))).thenReturn(mockBuilder);
+        Mockito.when(mockBuilder.buildClient()).thenReturn(blobClient);
+        setField(dataIngestionLibraryRunner.getClass()
+                .getDeclaredField("blobServiceClientBuilder"), dataIngestionLibraryRunner, mockBuilder);
     }
 
     @Test

@@ -65,6 +65,8 @@ public class FileReadProcessor implements Processor {
     @Autowired
     private AuditServiceImpl auditService;
 
+    @Autowired
+    private BlobServiceClientBuilder blobServiceClientBuilder;
     private Date fileTimeStamp;
 
     private BlobServiceClient blobClient;
@@ -84,7 +86,7 @@ public class FileReadProcessor implements Processor {
                 azureBlobConfig.getAccountName(), azureBlobConfig.getAccountKey());
         String uri = String.format("https://%s.blob.core.windows.net", azureBlobConfig.getAccountName());
 
-        blobClient = new BlobServiceClientBuilder()
+        blobClient = blobServiceClientBuilder
                 .endpoint(uri)
                 .credential(credential)
                 .buildClient();
