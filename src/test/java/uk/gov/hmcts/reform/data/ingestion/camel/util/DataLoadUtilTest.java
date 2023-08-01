@@ -21,6 +21,11 @@ public class DataLoadUtilTest extends CamelTestSupport {
     @Autowired
     DataLoadUtil dataLoadUtil;
 
+    @Override
+    protected void doSpringBootCheck() {
+        // don't check for spring boot
+    }
+
     @Test
     public void setGlobalConstant() throws Exception {
         CamelContext camelContext = createCamelContext();
