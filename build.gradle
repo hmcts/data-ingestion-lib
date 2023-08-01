@@ -47,9 +47,9 @@ def versions = [
         springBoot         : '3.1.1',
         springHystrix      : '2.1.1.RELEASE',
         springfoxSwagger   : '2.9.2',
-        camel              : '4.0.0-RC1',
+        camel              : '4.0.0-RC2',
         jackson            : '2.13.2',
-        springVersion      : '6.0.8',
+        springVersion      : '6.0.11',
         log4j              : '2.20.0'
 ]
 
@@ -311,12 +311,17 @@ dependencies {
     implementation group: 'org.springframework', name: 'spring-webmvc', version: versions.springVersion
 
     implementation group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '3.0.4'
-    implementation (group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.2.1')
+    implementation (group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.2')
     implementation (group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: versions.jackson)
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: versions.jackson
     implementation group: 'com.fasterxml.jackson', name: 'jackson-bom', version: '2.13.2.20220324', ext: 'pom'
 
+    implementation (group: 'commons-fileupload', name: 'commons-fileupload') {
+        version {
+            strictly '1.5'
+        }
+    }
     implementation group: 'io.github.openfeign.form', name: 'feign-form', version: '3.8.0'
     implementation (group: 'io.github.openfeign.form', name: 'feign-form-spring', version: '3.8.0') {
         exclude group: 'commons-io', module: 'commons-io'
@@ -331,22 +336,22 @@ dependencies {
         exclude group: 'org.apache.tomcat.embed', module: 'tomcat-embed-core'
         exclude group: 'org.apache.tomcat.embed', module: 'tomcat-embed-websocket'
     }
-    implementation ('com.github.hmcts:service-auth-provider-java-client:4.0.3') {
+    implementation ('com.github.hmcts:service-auth-provider-java-client:5.1.0') {
         exclude group: 'org.springframework.cloud', module: 'spring-cloud-openfeign-core'
     }
-    implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.8.3'
+    implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.8.5'
     implementation 'net.logstash.logback:logstash-logback-encoder:6.4'
 
-    implementation group: 'com.microsoft.azure', name: 'azure-storage-blob', version: '11.0.0'
+    implementation group: 'com.azure', name: 'azure-storage-blob', version: '12.18.0'
 
 
-    implementation group: 'org.springframework.security', name: 'spring-security-core', version: '5.8.3'
+    implementation group: 'org.springframework.security', name: 'spring-security-core', version: '5.8.5'
     implementation group: 'org.bouncycastle', name: 'bcpkix-jdk18on', version: '1.72'
 
     implementation group: 'org.flywaydb', name: 'flyway-core', version: '5.2.4'
-    implementation group: 'org.postgresql', name: 'postgresql', version: '42.3.3'
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.3.8'
 
-    implementation group: 'com.google.guava', name: 'guava', version: '30.1-jre'
+    implementation group: 'com.google.guava', name: 'guava', version: '32.0.0-jre'
 
     implementation group: 'org.apache.commons', name: 'commons-vfs2', version: '2.4.1'
     implementation group: 'com.jcraft', name: 'jsch', version: '0.1.55'
@@ -369,7 +374,7 @@ dependencies {
     implementation group: 'org.apache.camel.springboot', name: 'camel-spring-boot-starter', version: versions.camel
 
     implementation group: 'org.apache.camel', name: 'camel-core', version: versions.camel
-    implementation group: 'org.apache.camel', name: 'spi-annotations', version: '3.4.1'
+    implementation group: 'org.apache.camel', name: 'spi-annotations', version: versions.camel
 
     implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: versions.log4j
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: versions.log4j
@@ -423,12 +428,12 @@ dependencies {
     testImplementation group: 'org.apache.camel', name: 'camel-test-spring-junit5', version: versions.camel
     testImplementation group: 'org.apache.camel', name: 'camel-test-junit5', version: versions.camel
     testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.12.5'
-    testImplementation group: 'org.postgresql', name: 'postgresql', version: '42.3.3'
+    testImplementation group: 'org.postgresql', name: 'postgresql', version: '42.3.8'
 
     integrationTestImplementation group: 'org.apache.camel', name: 'camel-test-spring-junit5', version: versions.camel
     integrationTestImplementation group: 'org.apache.camel', name: 'camel-test-junit5', version: versions.camel
     integrationTestImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.12.5'
-    integrationTestImplementation group: 'org.postgresql', name: 'postgresql', version: '42.3.3'
+    integrationTestImplementation group: 'org.postgresql', name: 'postgresql', version: '42.3.8'
 
     testImplementation(group: 'org.yaml', name: 'snakeyaml', version: '1.23')
 
