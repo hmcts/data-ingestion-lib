@@ -156,17 +156,7 @@ idea {
     }
 }
 
-// Fix for CVE-2021-21295 & need to be removed with new Azure blob version
 configurations.all {
-//    resolutionStrategy.eachDependency { details ->
-//        if (details.requested.group == 'io.netty') {
-//            details.useVersion "4.1.77.Final"
-//        }
-//        if (details.requested.group == 'com.ibm.icu') {
-//            details.useVersion "66.1"
-//        }
-//    }
-
     exclude group: 'org.apache.groovy', module: 'groovy'
     exclude group: 'org.apache.groovy', module: 'groovy-xml'
     exclude group: 'org.apache.groovy', module: 'groovy-json'
@@ -342,7 +332,7 @@ dependencies {
     implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.8.5'
     implementation 'net.logstash.logback:logstash-logback-encoder:6.4'
 
-    implementation group: 'com.azure', name: 'azure-storage-blob', version: '12.18.0'
+    implementation group: 'com.azure', name: 'azure-storage-blob', version: '12.23.0'
 
 
     implementation group: 'org.springframework.security', name: 'spring-security-core', version: '5.8.5'
