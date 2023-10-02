@@ -332,8 +332,9 @@ dependencies {
     implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.8.5'
     implementation 'net.logstash.logback:logstash-logback-encoder:6.4'
 
-    implementation group: 'com.azure', name: 'azure-storage-blob', version: '12.23.0'
-
+//    implementation group: 'com.azure', name: 'azure-storage-blob', version: '12.23.0'
+    implementation platform('com.azure:azure-sdk-bom:1.2.17')
+    implementation 'com.azure:azure-storage-blob'
 
     implementation group: 'org.springframework.security', name: 'spring-security-core', version: '5.8.5'
     implementation group: 'org.bouncycastle', name: 'bcpkix-jdk18on', version: '1.72'
