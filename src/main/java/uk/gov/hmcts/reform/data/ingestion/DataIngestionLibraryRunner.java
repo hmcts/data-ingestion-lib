@@ -1,23 +1,23 @@
 package uk.gov.hmcts.reform.data.ingestion;
 
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.common.StorageSharedKeyCredential;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.CamelContext;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.data.ingestion.camel.service.AuditServiceImpl;
 import uk.gov.hmcts.reform.data.ingestion.configuration.AzureBlobConfig;
 
 import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.Optional;
 import java.util.function.BiPredicate;
@@ -57,8 +57,7 @@ public class DataIngestionLibraryRunner {
     private AzureBlobConfig azureBlobConfig;
 
     @Autowired
-    @Qualifier("credscloudStorageAccount")
-    private CloudStorageAccount cloudStorageAccount;
+    private BlobServiceClientBuilder blobServiceClientBuilder;
 
     @Value("${route.judicial-user-profile-orchestration.file-name:Personal}")
     protected String fileName;
@@ -79,21 +78,31 @@ public class DataIngestionLibraryRunner {
         log.info("{}:: Data Ingestion Library job run completed::", logComponentName);
     }
 
-    protected Optional<Date> getFileTimestamp(String fileName) throws URISyntaxException, StorageException {
+    protected Optional<Date> getFileTimestamp(String fileName) throws URISyntaxException {
         camelContext.getGlobalOptions()
             .put(SCHEDULER_START_TIME, String.valueOf(new Date().getTime()));
 
-        CloudBlobClient blobClient = cloudStorageAccount.createCloudBlobClient();
-        CloudBlobContainer container =
-                blobClient.getContainerReference(azureBlobConfig.getContainerName());
+        StorageSharedKeyCredential credential = new StorageSharedKeyCredential(
+                azureBlobConfig.getAccountName(), azureBlobConfig.getAccountKey());
+        String uri = String.format("https://%s.blob.core.windows.net", azureBlobConfig.getAccountName());
 
-        CloudBlockBlob cloudBlockBlob = container.getBlockBlobReference(fileName);
+        BlobServiceClient blobClient = blobServiceClientBuilder
+                .endpoint(uri)
+                .credential(credential)
+                .buildClient();
+        camelContext.getRegistry().bind("client", blobClient);
+
+        BlobContainerClient blobContainerClient = blobClient.getBlobContainerClient(
+                azureBlobConfig.getContainerName());
+
+        BlobClient cloudBlockBlob = blobContainerClient.getBlobClient(fileName);
 
         Optional<Date> fileTimestamp = Optional.empty();
 
         if (cloudBlockBlob.exists()) {
-            cloudBlockBlob.downloadAttributes();
-            fileTimestamp = Optional.ofNullable(cloudBlockBlob.getProperties().getLastModified());
+            OffsetDateTime lastModified = cloudBlockBlob.getProperties().getLastModified();
+            Date lastModifiedDate = new Date(lastModified.toInstant().toEpochMilli());
+            fileTimestamp = Optional.ofNullable(lastModifiedDate);
         }
         return fileTimestamp;
     }

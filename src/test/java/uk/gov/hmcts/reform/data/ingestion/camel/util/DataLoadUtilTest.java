@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.util;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.data.ingestion.camel.helper.JrdTestSupport;
 
 import java.sql.Timestamp;
 
+import static org.junit.Assert.assertNotNull;
+
 @SpringBootTest
 @Configuration()
 @ContextConfiguration(classes = DataLoadUtil.class)
@@ -18,6 +20,11 @@ public class DataLoadUtilTest extends CamelTestSupport {
 
     @Autowired
     DataLoadUtil dataLoadUtil;
+
+    @Override
+    protected void doSpringBootCheck() {
+        // don't check for spring boot
+    }
 
     @Test
     public void setGlobalConstant() throws Exception {
