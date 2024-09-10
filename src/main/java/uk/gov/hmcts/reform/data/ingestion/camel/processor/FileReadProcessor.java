@@ -25,7 +25,7 @@ import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.function.BiPredicate;
 
-import static net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.commons.lang.time.DateUtils.isSameDay;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.BlobStatus.NEW;
 import static uk.gov.hmcts.reform.data.ingestion.camel.util.BlobStatus.NOT_EXISTS;
