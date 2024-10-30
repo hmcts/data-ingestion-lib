@@ -53,7 +53,7 @@ public class ExceptionProcessorTest extends CamelTestSupport {
     FileResponseProcessor fileResponseProcessor = mock(FileResponseProcessor.class);
 
     @BeforeEach
-    public void setUp() {
+    public void init() {
         MockitoAnnotations.openMocks(this);
     }
 
