@@ -317,11 +317,6 @@ dependencies {
 
     implementation "com.github.hmcts.java-logging:logging:${versions.reformLogging}"
     implementation "com.github.hmcts.java-logging:logging-appinsights:${versions.reformLogging}"
-    implementation ('com.github.hmcts:properties-volume-spring-boot-starter:0.1.0') {
-        exclude group: 'org.glassfish', module: 'jakarta.el'
-        exclude group: 'org.apache.tomcat.embed', module: 'tomcat-embed-core'
-        exclude group: 'org.apache.tomcat.embed', module: 'tomcat-embed-websocket'
-    }
     implementation ('com.github.hmcts:service-auth-provider-java-client:5.1.0') {
         exclude group: 'org.springframework.cloud', module: 'spring-cloud-openfeign-core'
     }
