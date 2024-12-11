@@ -1,8 +1,7 @@
 package uk.gov.hmcts.reform.data.ingestion.configuration;
 
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageCredentials;
-import com.microsoft.azure.storage.StorageCredentialsAccountAndKey;
+import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.common.StorageSharedKeyCredential;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -16,16 +15,16 @@ public class BlobStorageCredentials {
 
     @Autowired
     @Qualifier("credsreg")
-    StorageCredentials storageCredentials;
+    StorageSharedKeyCredential storageCredentials;
 
     @Bean(name = "credsreg")
-    public StorageCredentials credentials() {
-        return new StorageCredentialsAccountAndKey(azureBlobConfig.getAccountName(), azureBlobConfig.getAccountKey());
+    public StorageSharedKeyCredential credentials() {
+        return new StorageSharedKeyCredential(azureBlobConfig.getAccountName(), azureBlobConfig.getAccountKey());
     }
 
-    @Bean(name = "credscloudStorageAccount")
-    public CloudStorageAccount cloudStorageAccount() throws Exception {
-        return new CloudStorageAccount(storageCredentials,
-            true);
+    @Bean(name = "clientBuilder")
+    public BlobServiceClientBuilder clientBuilder() {
+        return new BlobServiceClientBuilder();
     }
+
 }

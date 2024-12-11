@@ -1,28 +1,31 @@
 package uk.gov.hmcts.reform.data.ingestion.camel.util;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.spring.boot.CamelAutoConfiguration;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import uk.gov.hmcts.reform.data.ingestion.camel.helper.JrdTestSupport;
 
 import java.sql.Timestamp;
 
-@SpringBootTest
-@Configuration()
-@ContextConfiguration(classes = DataLoadUtil.class)
-public class DataLoadUtilTest extends CamelTestSupport {
+import static org.junit.Assert.assertNotNull;
+
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@ContextConfiguration(classes = {DataLoadUtil.class, CamelAutoConfiguration.class})
+@CamelSpringTest
+public class DataLoadUtilTest {
 
     @Autowired
     DataLoadUtil dataLoadUtil;
 
+    @Autowired
+    private CamelContext camelContext;
+
     @Test
     public void setGlobalConstant() throws Exception {
-        CamelContext camelContext = createCamelContext();
-        camelContext.start();
         dataLoadUtil.setGlobalConstant(camelContext, "judicial_leaf_scheduler");
         assertNotNull("judicial_leaf_scheduler", camelContext.getGlobalOption(MappingConstants.SCHEDULER_NAME));
     }
