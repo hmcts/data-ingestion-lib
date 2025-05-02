@@ -13,7 +13,16 @@ compile group: 'uk.gov.hmcts.reform', name: 'data-ingestion-lib', version: '0.2.
 Common library properties like email settings configured in library and customized properties should be configured with specific 
 microservices eg. rd-judicial-data-load (https://github.com/hmcts/rd-judicial-data-load)
 
+This library is hosted on Azure DevOps Artifacts and can be used in your project by adding the following to your `build.gradle` file:
 
-
-
+```gradle
+repositories {
+    maven {
+        url 'https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1'
+    }
+}
+dependencies {
+  implementation 'com.github.hmcts:idam-java-client:LATEST_TAG'
+}
+```
 
