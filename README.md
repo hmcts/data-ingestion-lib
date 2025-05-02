@@ -22,7 +22,7 @@ repositories {
     }
 }
 dependencies {
-  implementation 'com.github.hmcts:idam-java-client:LATEST_TAG'
+  implementation 'com.github.hmcts:data-ingestion-lib:LATEST_TAG'
 }
 ```
 
