@@ -39,7 +39,7 @@ def versions = [
         logback            : '1.5.11',
         gradlePitest       : '1.15.0',
         pitest             : '1.17.1',
-        reformLogging      : '6.1.7',
+        reformLogging      : '6.1.9',
         serenity           : '4.2.6',
         camel              : '4.8.1',
         jackson            : '2.18.1',
@@ -324,7 +324,7 @@ dependencies {
 
     implementation "com.github.hmcts.java-logging:logging:${versions.reformLogging}"
     implementation "com.github.hmcts.java-logging:logging-appinsights:${versions.reformLogging}"
-    implementation ('com.github.hmcts:service-auth-provider-java-client:5.1.0') {
+    implementation ('com.github.hmcts:service-auth-provider-java-client:5.3.2') {
         exclude group: 'org.springframework.cloud', module: 'spring-cloud-openfeign-core'
     }
     implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.8.5'
