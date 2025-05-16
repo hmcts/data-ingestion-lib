@@ -36,14 +36,13 @@ apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 
 def versions = [
-        logback            : '1.5.11',
         gradlePitest       : '1.15.0',
         pitest             : '1.17.1',
         reformLogging      : '6.1.9',
         serenity           : '4.2.6',
         camel              : '4.8.1',
         jackson            : '2.18.1',
-        log4j              : '2.24.2'
+        log4j              : '2.24.3'
 ]
 
 
@@ -106,7 +105,7 @@ publishing {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -212,7 +211,7 @@ task migratePostgresDatabase(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
 }
 
 jacoco {
-    toolVersion = "0.8.7"
+    toolVersion = "0.8.12"
 }
 
 jacocoTestReport {
@@ -367,10 +366,6 @@ dependencies {
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: versions.log4j
     implementation group: 'org.apache.logging.log4j', name: 'log4j', version: versions.log4j
     implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: versions.log4j
-
-    implementation group: 'ch.qos.logback', name: 'logback-core', version: versions.logback
-    implementation group: 'ch.qos.logback', name: 'logback-classic', version: versions.logback
-    implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
 
     implementation group: 'org.springframework.cloud', name: 'spring-cloud-config-server', version: '4.1.4'
 
