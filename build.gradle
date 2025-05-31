@@ -320,7 +320,7 @@ dependencies {
         exclude group: 'commons-io', module: 'commons-io'
     }
 
-    implementation group: 'com.sun.xml.bind', name: 'jaxb-osgi', version: '2.3.3'
+    implementation group: 'com.sun.xml.bind', name: 'jaxb-osgi', version: '2.3.9'
 
     implementation "com.github.hmcts.java-logging:logging:${versions.reformLogging}"
     implementation "com.github.hmcts.java-logging:logging-appinsights:${versions.reformLogging}"
