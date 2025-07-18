@@ -311,7 +311,7 @@ dependencies {
 
     implementation (group: 'commons-fileupload', name: 'commons-fileupload') {
         version {
-            strictly '1.5'
+            strictly '1.6.0'
         }
     }
     implementation group: 'io.github.openfeign.form', name: 'feign-form', version: '3.8.0'
