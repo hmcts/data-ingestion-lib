@@ -41,7 +41,7 @@ def versions = [
         reformLogging      : '6.1.9',
         serenity           : '4.2.6',
         camel              : '4.8.1',
-        jackson            : '2.18.1',
+        jackson            : '2.20.1',
         log4j              : '2.24.3'
 ]
 
