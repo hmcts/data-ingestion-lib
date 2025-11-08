@@ -40,7 +40,7 @@ def versions = [
         pitest             : '1.17.1',
         reformLogging      : '6.1.9',
         serenity           : '4.2.6',
-        camel              : '4.8.1',
+        camel              : '4.16.0',
         jackson            : '2.18.1',
         log4j              : '2.24.3'
 ]
@@ -349,7 +349,7 @@ dependencies {
     implementation group: 'org.apache.camel', name: 'camel-csv', version: versions.camel
     implementation group: 'org.apache.camel', name: 'camel-sql', version: versions.camel
     api group: 'org.apache.camel', name: 'camel-spring-batch', version: versions.camel
-    testImplementation group: 'org.apache.camel', name: 'camel-test-spring', version: '3.22.2'
+    testImplementation group: 'org.apache.camel', name: 'camel-test-spring', version: '3.22.4'
 
 
     api group: 'org.apache.camel.springboot', name: 'camel-azure-storage-blob-starter', version:versions.camel
