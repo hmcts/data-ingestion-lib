@@ -37,7 +37,7 @@ apply plugin: 'org.springframework.boot'
 
 def versions = [
         gradlePitest       : '1.15.0',
-        pitest             : '1.17.1',
+        pitest             : '1.22.0',
         reformLogging      : '6.1.9',
         serenity           : '4.2.6',
         camel              : '4.8.1',
