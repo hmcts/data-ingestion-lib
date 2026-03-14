@@ -374,7 +374,7 @@ dependencies {
     api group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
     implementation 'com.sendgrid:sendgrid-java:4.10.3'
 
-    implementation group: 'jakarta.el', name: 'jakarta.el-api', version: '5.0.0'
+    implementation group: 'jakarta.el', name: 'jakarta.el-api', version: '5.0.1'
     implementation group: 'org.glassfish.expressly', name: 'expressly', version: '5.0.0'
 
     compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
