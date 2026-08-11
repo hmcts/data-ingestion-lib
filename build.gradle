@@ -366,7 +366,7 @@ dependencies {
     implementation group: 'org.apache.logging.log4j', name: 'log4j', version: versions.log4j
     implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: versions.log4j
 
-    implementation group: 'org.springframework.cloud', name: 'spring-cloud-config-server', version: '4.1.4'
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-config-server', version: '4.3.3'
 
     implementation group: 'com.opencsv', name: 'opencsv', version: '3.7'
     api group: 'commons-lang', name: 'commons-lang', version: '2.6'
@@ -455,6 +455,17 @@ dependencyManagement {
         }
         dependencySet(group: 'com.fasterxml.jackson.module', version: versions.jackson) {
             entry 'jackson-module-parameter-names'
+        }
+        dependencySet(group: 'org.apache.httpcomponents.core5', version: '5.4.2') {
+            entry 'httpcore5'
+            entry 'httpcore5-h2'
+        }
+        dependencySet(group: 'org.springframework.cloud', version: '4.3.3') {
+            entry 'spring-cloud-commons'
+            entry 'spring-cloud-config-client'
+            entry 'spring-cloud-context'
+            entry 'spring-cloud-starter'
+            entry 'spring-cloud-starter-openfeign'
         }
     }
 }
