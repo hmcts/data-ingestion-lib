@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '3.3.4'
+        springBootVersion = '3.5.16'
     }
     repositories {
         mavenLocal()
@@ -18,10 +18,10 @@ plugins {
     id 'checkstyle'
     id 'jacoco'
     id 'pmd'
-    id 'com.github.ben-manes.versions' version '0.51.0'
+    id 'com.github.ben-manes.versions' version '0.54.0'
     id "info.solidsoft.pitest" version '1.15.0'
-    id 'org.springframework.boot' version '3.3.5'
-    id 'io.spring.dependency-management' version '1.1.6'
+    id 'org.springframework.boot' version '3.5.16'
+    id 'io.spring.dependency-management' version '1.1.7'
     id 'org.owasp.dependencycheck' version '10.0.4'
     id 'org.sonarqube' version '5.1.0.4882'
     id "org.flywaydb.flyway" version "9.22.3"
@@ -40,9 +40,9 @@ def versions = [
         pitest             : '1.17.1',
         reformLogging      : '8.0.0',
         serenity           : '4.2.6',
-        camel              : '4.8.1',
-        jackson            : '2.18.1',
-        log4j              : '2.24.3'
+        camel              : '4.21.0',
+        jackson            : '2.22.0',
+        log4j              : '2.26.1'
 ]
 
 
@@ -306,7 +306,7 @@ dependencies {
     implementation (group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson)
     implementation (group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: versions.jackson)
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: versions.jackson
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.22'
     implementation group: 'com.fasterxml.jackson', name: 'jackson-bom', version: versions.jackson, ext: 'pom'
 
     implementation (group: 'commons-fileupload', name: 'commons-fileupload') {
@@ -322,7 +322,6 @@ dependencies {
     implementation group: 'com.sun.xml.bind', name: 'jaxb-osgi', version: '2.3.3'
 
     implementation "com.github.hmcts.java-logging:logging:${versions.reformLogging}"
-    implementation "com.github.hmcts.java-logging:logging-appinsights:${versions.reformLogging}"
     implementation ('com.github.hmcts:service-auth-provider-java-client:5.3.2') {
         exclude group: 'org.springframework.cloud', module: 'spring-cloud-openfeign-core'
     }
@@ -334,11 +333,11 @@ dependencies {
     implementation group: 'org.bouncycastle', name: 'bcpkix-jdk18on', version: '1.79'
 
     implementation group: 'org.flywaydb', name: 'flyway-core', version: '5.2.4'
-    implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.4'
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.13'
 
     implementation group: 'com.google.guava', name: 'guava', version: '32.0.0-jre'
 
-    implementation group: 'org.apache.commons', name: 'commons-vfs2', version: '2.4.1'
+    implementation group: 'org.apache.commons', name: 'commons-vfs2', version: '2.10.0'
     implementation group: 'com.jcraft', name: 'jsch', version: '0.1.55'
 
     implementation 'commons-io:commons-io:2.18.0'
@@ -367,7 +366,7 @@ dependencies {
     implementation group: 'org.apache.logging.log4j', name: 'log4j', version: versions.log4j
     implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: versions.log4j
 
-    implementation group: 'org.springframework.cloud', name: 'spring-cloud-config-server', version: '4.1.4'
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-config-server', version: '4.3.3'
 
     implementation group: 'com.opencsv', name: 'opencsv', version: '3.7'
     api group: 'commons-lang', name: 'commons-lang', version: '2.6'
@@ -412,12 +411,12 @@ dependencies {
     testImplementation group: 'org.apache.camel', name: 'camel-test-spring-junit5', version: versions.camel
     testImplementation group: 'org.apache.camel', name: 'camel-test-junit5', version: versions.camel
     testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.20.4'
-    testImplementation group: 'org.postgresql', name: 'postgresql', version: '42.7.4'
+    testImplementation group: 'org.postgresql', name: 'postgresql', version: '42.7.13'
 
     integrationTestImplementation group: 'org.apache.camel', name: 'camel-test-spring-junit5', version: versions.camel
     integrationTestImplementation group: 'org.apache.camel', name: 'camel-test-junit5', version: versions.camel
     integrationTestImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.20.4'
-    integrationTestImplementation group: 'org.postgresql', name: 'postgresql', version: '42.7.4'
+    integrationTestImplementation group: 'org.postgresql', name: 'postgresql', version: '42.7.13'
 
     testImplementation(group: 'org.yaml', name: 'snakeyaml', version: '2.3')
 
@@ -437,6 +436,38 @@ dependencies {
 
 dependencyCheck {
     suppressionFile = 'config/owasp/suppressions.xml'
+}
+
+dependencyManagement {
+    dependencies {
+        dependencySet(group: 'com.fasterxml.jackson.core', version: versions.jackson) {
+            entry 'jackson-core'
+            entry 'jackson-databind'
+        }
+        dependencySet(group: 'com.fasterxml.jackson.datatype', version: versions.jackson) {
+            entry 'jackson-datatype-jsr310'
+            entry 'jackson-datatype-jdk8'
+        }
+        dependencySet(group: 'com.fasterxml.jackson.dataformat', version: versions.jackson) {
+            entry 'jackson-dataformat-toml'
+            entry 'jackson-dataformat-xml'
+            entry 'jackson-dataformat-yaml'
+        }
+        dependencySet(group: 'com.fasterxml.jackson.module', version: versions.jackson) {
+            entry 'jackson-module-parameter-names'
+        }
+        dependencySet(group: 'org.apache.httpcomponents.core5', version: '5.4.2') {
+            entry 'httpcore5'
+            entry 'httpcore5-h2'
+        }
+        dependencySet(group: 'org.springframework.cloud', version: '4.3.3') {
+            entry 'spring-cloud-commons'
+            entry 'spring-cloud-config-client'
+            entry 'spring-cloud-context'
+            entry 'spring-cloud-starter'
+            entry 'spring-cloud-starter-openfeign'
+        }
+    }
 }
 
 dependencyUpdates.resolutionStrategy = {
