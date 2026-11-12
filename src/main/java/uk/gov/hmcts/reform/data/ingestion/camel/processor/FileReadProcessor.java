@@ -109,7 +109,7 @@ public class FileReadProcessor implements Processor {
 
         exchange.getMessage().setHeader(IS_FILE_STALE, false);
         context.getGlobalOptions().put(fileName, NOT_STALE_FILE);
-        exchange.getMessage().setBody(consumer.receiveBody(blobFilePath, fileReadTimeOut));
+        exchange.getMessage().setBody(consumer.receiveBody(blobFilePath, fileReadTimeOut, byte[].class));
     }
 
     /**
